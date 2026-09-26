@@ -23,4 +23,18 @@ class MenuGachaController extends Controller
 
         return view('menu-gachas.show', ['menuGacha' => $menuGacha]);
     }
+
+    public function update(Request $request, int $id): RedirectResponse
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+        ]);
+
+        $menuGacha = $request->user()->menuGachas()->findOrFail($id);
+        $menuGacha->update($validated);
+
+        return redirect()
+            ->route('menu-gachas.show', ['id' => $menuGacha->getKey()])
+            ->with('message', 'メニューガチャを更新しました。');
+    }
 }

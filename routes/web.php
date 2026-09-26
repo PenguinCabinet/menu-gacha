@@ -21,6 +21,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/menu/{id}', [MenuGachaController::class, 'show'])
         ->whereNumber('id')
         ->name('menu-gachas.show');
+    Route::patch('/menu/{id}', [MenuGachaController::class, 'update'])
+        ->whereNumber('id')
+        ->name('menu-gachas.update');
 });
 
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');

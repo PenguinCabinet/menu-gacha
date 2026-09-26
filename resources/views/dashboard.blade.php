@@ -56,17 +56,27 @@
                 <div class="card-body p-4 p-md-5">
                     <div class="tab-content">
                         <section
-                            class="tab-pane fade show active"
+                            class="tab-pane fade show active position-relative"
                             id="menu-gacha-panel"
                             role="tabpanel"
                             aria-labelledby="menu-gacha-tab"
                             tabindex="0"
+                            style="min-height: 320px;"
                         >
                             <div class="text-center py-5">
                                 <div class="display-4 mb-3" aria-hidden="true">🍽️</div>
                                 <h2 class="h4 fw-bold mb-2">メニューガチャ</h2>
                                 <p class="text-secondary mb-0">メニューガチャを作成してみましょう。</p>
                             </div>
+                            <button
+                                class="btn btn-primary rounded-circle d-inline-flex align-items-center justify-content-center position-absolute bottom-0 end-0 shadow"
+                                type="button"
+                                aria-label="作成"
+                                title="作成"
+                                style="width: 3.5rem; height: 3.5rem; font-size: 1.75rem;"
+                            >
+                                <span aria-hidden="true">+</span>
+                            </button>
                         </section>
 
                         <section

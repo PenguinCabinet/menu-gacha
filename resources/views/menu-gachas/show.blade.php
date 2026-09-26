@@ -94,16 +94,13 @@
                         >
                             <h1 class="h4 fw-bold mb-4">メニューガチャを編集</h1>
 
-                            <form method="POST" action="{{ route('menu-gachas.update', ['id' => $menuGacha->getKey()]) }}">
-                                @csrf
-                                @method('PATCH')
-
-                                <div class="mb-3">
+                            <div class="mb-3">
                                     <label for="name" class="form-label">メニューガチャ名</label>
                                     <input
                                         type="text"
                                         id="name"
                                         name="name"
+                                        form="menu-gacha-edit-form"
                                         class="form-control @error('name') is-invalid @enderror"
                                         value="{{ old('name', $menuGacha->name) }}"
                                         maxlength="255"
@@ -116,7 +113,7 @@
                                 <hr class="my-4">
                                 <h2 class="h5 fw-bold mb-3">食事を編集</h2>
 
-                                <div class="d-flex flex-column gap-3 mb-4">
+                            <div class="d-flex flex-column gap-3 mb-4">
                                 @forelse ($menuGacha->items as $item)
                                     <div class="row g-2 align-items-end border rounded p-3 bg-white">
                                         <div class="col-md-7">
@@ -125,6 +122,7 @@
                                                 type="text"
                                                 id="item-name-{{ $item->getKey() }}"
                                                 name="items[{{ $item->getKey() }}][item_name]"
+                                                form="menu-gacha-edit-form"
                                                 class="form-control"
                                                 value="{{ old('items.'.$item->getKey().'.item_name', $item->item_name) }}"
                                                 maxlength="255"
@@ -137,6 +135,7 @@
                                                 type="number"
                                                 id="item-price-{{ $item->getKey() }}"
                                                 name="items[{{ $item->getKey() }}][price]"
+                                                form="menu-gacha-edit-form"
                                                 class="form-control"
                                                 value="{{ old('items.'.$item->getKey().'.price', $item->price) }}"
                                                 min="0"
@@ -144,12 +143,26 @@
                                                 required
                                             >
                                         </div>
+                                        <div class="col-md-2 d-grid">
+                                            <form
+                                                method="POST"
+                                                action="{{ route('menu-gachas.items.destroy', ['id' => $menuGacha->getKey(), 'itemId' => $item->getKey()]) }}"
+                                                onsubmit="return confirm('この食事を削除しますか？');"
+                                            >
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-outline-danger">削除</button>
+                                            </form>
+                                        </div>
                                     </div>
                                 @empty
                                     <p class="text-secondary mb-0">登録済みの食事はありません。</p>
                                 @endforelse
                                 </div>
 
+                            <form id="menu-gacha-edit-form" method="POST" action="{{ route('menu-gachas.update', ['id' => $menuGacha->getKey()]) }}">
+                                @csrf
+                                @method('PATCH')
                                 <button type="submit" class="btn btn-primary">変更を保存</button>
                             </form>
 

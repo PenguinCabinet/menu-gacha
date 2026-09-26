@@ -97,4 +97,26 @@ class MenuGachaPageTest extends TestCase
             'price' => 950,
         ]);
     }
+
+    public function test_meal_can_be_deleted_from_its_menu_gacha(): void
+    {
+        $user = User::factory()->create();
+        $menuGacha = $user->menuGachas()->create(['name' => '週末ごはん']);
+        $item = $menuGacha->items()->create([
+            'item_name' => 'カレー',
+            'price' => 850,
+        ]);
+
+        $response = $this->actingAs($user)
+            ->delete(route('menu-gachas.items.destroy', [
+                'id' => $menuGacha->getKey(),
+                'itemId' => $item->getKey(),
+            ]));
+
+        $response->assertRedirect(route('menu-gachas.show', [
+            'id' => $menuGacha->getKey(),
+            'tab' => 'edit',
+        ]));
+        $this->assertDatabaseMissing('menu_gacha_items', ['id' => $item->getKey()]);
+    }
 }

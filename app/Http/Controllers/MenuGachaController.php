@@ -66,4 +66,14 @@ class MenuGachaController extends Controller
             ->route('menu-gachas.show', ['id' => $menuGacha->getKey(), 'tab' => 'edit'])
             ->with('message', '食事を追加しました。');
     }
+
+    public function destroyItem(Request $request, int $id, int $itemId): RedirectResponse
+    {
+        $menuGacha = $request->user()->menuGachas()->findOrFail($id);
+        $menuGacha->items()->findOrFail($itemId)->delete();
+
+        return redirect()
+            ->route('menu-gachas.show', ['id' => $menuGacha->getKey(), 'tab' => 'edit'])
+            ->with('message', '食事を削除しました。');
+    }
 }

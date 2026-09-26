@@ -25,7 +25,7 @@
 
                                 <div class="mb-3">
                                     <label for="email" class="form-label">メールアドレス</label>
-                                    <input type="email" id="email" name="email" class="form-control" placeholder="name@example.com">
+                                    <input type="email" id="email" name="email" class="form-control" placeholder="name@example.com" value="{{ old('email') }}">
                                 </div>
 
                                 <div class="mb-3">
@@ -35,6 +35,10 @@
 
                                 <button type="submit" class="btn btn-primary w-100">ログイン</button>
                             </form>
+
+                            <div class="mt-3 text-center">
+                                <a href="{{ route('register') }}">ユーザー登録はこちら</a>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -68,15 +68,18 @@
                                 <h2 class="h4 fw-bold mb-2">メニューガチャ</h2>
                                 <p class="text-secondary mb-0">メニューガチャを作成してみましょう。</p>
                             </div>
-                            <button
-                                class="btn btn-primary rounded-circle d-inline-flex align-items-center justify-content-center position-absolute bottom-0 end-0 shadow"
-                                type="button"
-                                aria-label="作成"
-                                title="作成"
-                                style="width: 3.5rem; height: 3.5rem; font-size: 1.75rem;"
-                            >
-                                <span aria-hidden="true">+</span>
-                            </button>
+                            <form method="POST" action="{{ route('menu-gachas.store') }}" class="position-absolute bottom-0 end-0">
+                                @csrf
+                                <button
+                                    class="btn btn-primary rounded-circle d-inline-flex align-items-center justify-content-center shadow"
+                                    type="submit"
+                                    aria-label="作成"
+                                    title="作成"
+                                    style="width: 3.5rem; height: 3.5rem; font-size: 1.75rem;"
+                                >
+                                    <span aria-hidden="true">+</span>
+                                </button>
+                            </form>
                         </section>
 
                         <section

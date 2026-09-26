@@ -24,6 +24,9 @@ Route::middleware('auth')->group(function () {
     Route::patch('/menu/{id}', [MenuGachaController::class, 'update'])
         ->whereNumber('id')
         ->name('menu-gachas.update');
+    Route::post('/menu/{id}/items', [MenuGachaController::class, 'storeItem'])
+        ->whereNumber('id')
+        ->name('menu-gachas.items.store');
 });
 
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');

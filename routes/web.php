@@ -10,6 +10,10 @@ Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
+Route::get('/menu/{id}', [MenuGachaController::class, 'show'])
+    ->whereNumber('id')
+    ->name('menu-gachas.show');
+
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', function (Request $request) {
         $menuGachas = $request->user()->menuGachas()->latest('created_at')->get();
@@ -18,9 +22,6 @@ Route::middleware('auth')->group(function () {
     })->name('dashboard');
 
     Route::post('/menu', [MenuGachaController::class, 'store'])->name('menu-gachas.store');
-    Route::get('/menu/{id}', [MenuGachaController::class, 'show'])
-        ->whereNumber('id')
-        ->name('menu-gachas.show');
     Route::patch('/menu/{id}', [MenuGachaController::class, 'update'])
         ->whereNumber('id')
         ->name('menu-gachas.update');

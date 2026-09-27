@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\MenuGacha;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -20,23 +21,30 @@ class MenuGachaController extends Controller
 
     public function show(Request $request, int $id): View
     {
-        $menuGacha = $request->user()->menuGachas()->with('items')->findOrFail($id);
+        $menuGacha = MenuGacha::with('items')->findOrFail($id);
+        $isOwner = $request->user() !== null && $menuGacha->user_id === $request->user()->getKey();
 
-        return view('menu-gachas.show', ['menuGacha' => $menuGacha]);
+        abort_unless($isOwner || $menuGacha->is_published, 404);
+
+        return view('menu-gachas.show', ['menuGacha' => $menuGacha, 'isOwner' => $isOwner]);
     }
 
     public function update(Request $request, int $id): RedirectResponse
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-'items' => ['sometimes', 'array'],
+            'is_published' => ['sometimes', 'required', 'boolean'],
+            'items' => ['sometimes', 'array'],
             'items.*' => ['array:item_name,price'],
         ]);
 
         $menuGacha = $request->user()->menuGachas()->findOrFail($id);
 
         DB::transaction(function () use ($menuGacha, $validated): void {
-            $menuGacha->update(['name' => $validated['name']]);
+            $menuGacha->update([
+                'name' => $validated['name'],
+                'is_published' => $validated['is_published'] ?? $menuGacha->is_published,
+            ]);
 
             foreach ($validated['items'] ?? [] as $itemId => $itemData) {
                 $menuGacha->items()->findOrFail($itemId)->update($itemData);

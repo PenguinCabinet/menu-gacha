@@ -1,21 +1,33 @@
 substitutions:
   _SERVICE_NAME: menu-gacha
   _REGION: asia-northeast1
+  _AR_REPOSITORY: cloud-run
+  _LITESTREAM_GCS_BUCKET: replace-with-your-globally-unique-bucket
   _APP_KEY_SECRET: menu_gacha_APP_KEY
 
 steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --tag=${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPOSITORY}/${_SERVICE_NAME}:${BUILD_ID}
+      - .
+
   - name: gcr.io/google.com/cloudsdktool/google-cloud-cli:stable
     entrypoint: gcloud
     args:
       - run
       - deploy
       - ${_SERVICE_NAME}
-      - --source=.
+      - --image=${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPOSITORY}/${_SERVICE_NAME}:${BUILD_ID}
       - --region=${_REGION}
       - --platform=managed
       - --allow-unauthenticated
-      - --set-env-vars=APP_ENV=production,APP_DEBUG=false,LOG_CHANNEL=stderr,SESSION_DRIVER=file,CACHE_STORE=file,QUEUE_CONNECTION=sync
+      - --max=1
+      - --set-env-vars=APP_ENV=production,APP_DEBUG=false,LOG_CHANNEL=stderr,SESSION_DRIVER=file,CACHE_STORE=file,QUEUE_CONNECTION=sync,DB_CONNECTION=sqlite,DB_DATABASE=/var/www/html/database/database.sqlite,DB_JOURNAL_MODE=WAL,DB_BUSY_TIMEOUT=5000,LITESTREAM_GCS_BUCKET=${_LITESTREAM_GCS_BUCKET}
       - --set-secrets=APP_KEY=${_APP_KEY_SECRET}:latest
+
+images:
+  - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPOSITORY}/${_SERVICE_NAME}:${BUILD_ID}
 
 options:
   logging: CLOUD_LOGGING_ONLY

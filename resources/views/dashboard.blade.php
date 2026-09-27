@@ -61,13 +61,33 @@
                             role="tabpanel"
                             aria-labelledby="menu-gacha-tab"
                             tabindex="0"
-                            style="min-height: 320px;"
+                            style="min-height: 320px; padding-bottom: 4.5rem;"
                         >
-                            <div class="text-center py-5">
-                                <div class="display-4 mb-3" aria-hidden="true">🍽️</div>
-                                <h2 class="h4 fw-bold mb-2">メニューガチャ</h2>
-                                <p class="text-secondary mb-0">メニューガチャを作成してみましょう。</p>
-                            </div>
+                            @if ($menuGachas->isEmpty())
+                                <div class="text-center py-5">
+                                    <div class="display-4 mb-3" aria-hidden="true">🍽️</div>
+                                    <h2 class="h4 fw-bold mb-2">メニューガチャ</h2>
+                                    <p class="text-secondary mb-0">メニューガチャを作成してみましょう。</p>
+                                </div>
+                            @else
+                                <div class="row row-cols-1 row-cols-md-2 g-3">
+                                    @foreach ($menuGachas as $menuGacha)
+                                        <div class="col">
+                                            <a
+                                                href="{{ route('menu-gachas.show', ['id' => $menuGacha->getKey()]) }}"
+                                                class="card h-100 text-decoration-none text-reset shadow-sm"
+                                            >
+                                                <div class="card-body">
+                                                    <h3 class="h5 card-title fw-bold">{{ $menuGacha->name }}</h3>
+                                                    <p class="card-text text-secondary small mb-0">
+                                                        作成日: {{ $menuGacha->created_at->format('Y年n月j日') }}
+                                                    </p>
+                                                </div>
+                                            </a>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @endif
                             <form method="POST" action="{{ route('menu-gachas.store') }}" class="position-absolute bottom-0 end-0">
                                 @csrf
                                 <button

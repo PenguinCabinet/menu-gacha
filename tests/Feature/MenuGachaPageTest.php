@@ -100,6 +100,62 @@ class MenuGachaPageTest extends TestCase
         ]);
     }
 
+    public function test_page_save_action_updates_menu_items_and_flags_together(): void
+    {
+        $user = User::factory()->create();
+        $menuGacha = $user->menuGachas()->create(['name' => '週末ごはん']);
+        $item = $menuGacha->items()->create(['item_name' => 'カレー', 'price' => 850]);
+        $flag = $menuGacha->flags()->create(['name' => '学割']);
+
+        $response = $this->actingAs($user)
+            ->patch(route('menu-gachas.update', ['id' => $menuGacha->getKey()]), [
+                'name' => '平日ごはん',
+                'is_published' => '1',
+                'items' => [
+                    $item->getKey() => ['item_name' => 'チキンカレー', 'price' => 950],
+                ],
+                'flags' => [
+                    $flag->getKey() => ['name' => '平日限定'],
+                ],
+            ]);
+
+        $response->assertRedirect(route('menu-gachas.show', [
+            'id' => $menuGacha->getKey(),
+            'tab' => 'edit',
+        ]));
+        $this->assertDatabaseHas('menu_gachas', [
+            'id' => $menuGacha->getKey(),
+            'name' => '平日ごはん',
+            'is_published' => true,
+        ]);
+        $this->assertDatabaseHas('menu_gacha_items', [
+            'id' => $item->getKey(),
+            'item_name' => 'チキンカレー',
+            'price' => 950,
+        ]);
+        $this->assertDatabaseHas('menu_gacha_flags', [
+            'id' => $flag->getKey(),
+            'name' => '平日限定',
+        ]);
+    }
+
+    public function test_edit_tab_has_one_fixed_save_button_for_the_edit_form(): void
+    {
+        $user = User::factory()->create();
+        $menuGacha = $user->menuGachas()->create(['name' => '週末ごはん']);
+        $menuGacha->flags()->create(['name' => '学割']);
+
+        $response = $this->actingAs($user)->get(route('menu-gachas.show', [
+            'id' => $menuGacha->getKey(),
+            'tab' => 'edit',
+        ]));
+
+        $response->assertOk()
+            ->assertSee('position-fixed bottom-0 end-0', false)
+            ->assertSee('name="flags['.$menuGacha->flags()->first()->getKey().'][name]" form="menu-gacha-edit-form"', false);
+        $this->assertSame(1, substr_count($response->getContent(), '>保存</button>'));
+    }
+
     public function test_meal_can_be_deleted_from_its_menu_gacha(): void
     {
         $user = User::factory()->create();

@@ -271,7 +271,6 @@
                             <form id="menu-gacha-edit-form" method="POST" action="{{ route('menu-gachas.update', ['id' => $menuGacha->getKey()]) }}">
                                 @csrf
                                 @method('PATCH')
-                                <button type="submit" class="btn btn-primary">変更を保存</button>
                             </form>
 
                             <form method="POST" action="{{ route('menu-gachas.items.store', ['id' => $menuGacha->getKey()]) }}" class="border rounded p-3 bg-white mt-4">
@@ -334,17 +333,15 @@
                             <div class="d-flex flex-column gap-3 mb-4">
                                 @forelse ($menuGacha->flags as $flag)
                                     <div class="border rounded p-3 bg-white">
-                                        <form method="POST" action="{{ route('menu-gachas.flags.update', ['id' => $menuGacha->getKey(), 'flagId' => $flag->getKey()]) }}" class="row g-2 align-items-end">
-                                            @csrf
-                                            @method('PATCH')
+                                        <div class="row g-2 align-items-end">
                                             <div class="col-sm">
                                                 <label for="flag-name-{{ $flag->getKey() }}" class="form-label">フラグ名</label>
-                                                <input type="text" id="flag-name-{{ $flag->getKey() }}" name="flag_name" class="form-control" value="{{ $flag->name }}" maxlength="255" required>
+                                                <input type="text" id="flag-name-{{ $flag->getKey() }}" name="flags[{{ $flag->getKey() }}][name]" form="menu-gacha-edit-form" class="form-control @error('flags.'.$flag->getKey().'.name') is-invalid @enderror" value="{{ old('flags.'.$flag->getKey().'.name', $flag->name) }}" maxlength="255" required>
+                                                @error('flags.'.$flag->getKey().'.name')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
                                             </div>
-                                            <div class="col-sm-auto d-grid">
-                                                <button type="submit" class="btn btn-outline-primary">保存</button>
-                                            </div>
-                                        </form>
+                                        </div>
                                         <form method="POST" action="{{ route('menu-gachas.flags.destroy', ['id' => $menuGacha->getKey(), 'flagId' => $flag->getKey()]) }}" class="mt-2" onsubmit="return confirm('このフラグを削除しますか？');">
                                             @csrf
                                             @method('DELETE')
@@ -372,6 +369,7 @@
                                     </div>
                                 </div>
                             </form>
+                            <button type="submit" form="menu-gacha-edit-form" class="btn btn-primary position-fixed bottom-0 end-0 m-3 m-md-4 shadow" style="z-index: 1030;">保存</button>
                         </section>
                         @endif
                     </div>

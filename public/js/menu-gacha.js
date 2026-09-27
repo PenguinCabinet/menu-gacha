@@ -1,5 +1,9 @@
 export const MAX_GACHA_SELECTIONS = 10_000;
 
+export function filter_gacha_items_by_flags(items, enabledFlagIds) {
+    return items.filter((item) => (item.flagIds ?? []).every((flagId) => enabledFlagIds.includes(flagId)));
+}
+
 export function pull_gacha_by_menu(items, budget, random = Math.random) {
     const selectedItems = [];
     const selectedFreeItemIndexes = new Set();
@@ -37,6 +41,7 @@ if (typeof document !== 'undefined') {
     const gachaBudgetInput = document.getElementById('gacha-budget');
     const gachaResult = document.getElementById('gacha-result');
     const gachaTotal = document.getElementById('gacha-total');
+    const gachaFlagCheckboxes = document.querySelectorAll('#gacha-flags input[type="checkbox"]');
 
     document.getElementById('run-gacha').addEventListener('click', () => {
         const budget = Number(gachaBudgetInput.value);
@@ -54,11 +59,21 @@ if (typeof document !== 'undefined') {
             return;
         }
 
+        const enabledFlagIds = Array.from(gachaFlagCheckboxes)
+            .filter((checkbox) => checkbox.checked)
+            .map((checkbox) => Number(checkbox.value));
+        const eligibleItems = filter_gacha_items_by_flags(gachaItems, enabledFlagIds);
+
+        if (eligibleItems.length === 0) {
+            gachaResult.textContent = '現在のフラグ設定で選べる食事がありません。';
+            return;
+        }
+
         let selectedItems;
         let totalPrice;
 
         try {
-            ({ items: selectedItems, totalPrice } = pull_gacha_by_menu(gachaItems, budget));
+            ({ items: selectedItems, totalPrice } = pull_gacha_by_menu(eligibleItems, budget));
         } catch (error) {
             if (!(error instanceof RangeError)) {
                 throw error;

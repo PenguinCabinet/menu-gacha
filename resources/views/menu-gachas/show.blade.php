@@ -102,6 +102,20 @@
                                 </div>
                             </div>
 
+                            @if ($menuGacha->flags->isNotEmpty())
+                                <fieldset class="mb-4" id="gacha-flags">
+                                    <legend class="fs-6 fw-semibold mb-2">対象のフラグ</legend>
+                                    <div class="d-flex flex-wrap gap-3">
+                                        @foreach ($menuGacha->flags as $flag)
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" id="gacha-flag-{{ $flag->getKey() }}" value="{{ $flag->getKey() }}" checked>
+                                                <label class="form-check-label" for="gacha-flag-{{ $flag->getKey() }}">{{ $flag->name }}を含む</label>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </fieldset>
+                            @endif
+
                             <div id="gacha-result" aria-live="polite">
                                 <p class="text-secondary mb-0">ボタンを押してメニューを選びましょう。</p>
                             </div>
@@ -125,8 +139,17 @@
 
                             <h2 class="h5 fw-bold mb-3">食事</h2>
                             @forelse ($menuGacha->items as $item)
-                                <div class="d-flex justify-content-between border-bottom py-2">
-                                    <span>{{ $item->item_name }}</span>
+                                <div class="d-flex justify-content-between gap-3 border-bottom py-2">
+                                    <div>
+                                        <span>{{ $item->item_name }}</span>
+                                        @if ($item->flags->isNotEmpty())
+                                            <div class="d-flex flex-wrap gap-1 mt-1">
+                                                @foreach ($item->flags as $flag)
+                                                    <span class="badge rounded-pill text-bg-secondary">{{ $flag->name }}</span>
+                                                @endforeach
+                                            </div>
+                                        @endif
+                                    </div>
                                     <span>{{ number_format($item->price) }}円</span>
                                 </div>
                             @empty
@@ -220,6 +243,27 @@
                                                 <button type="submit" class="btn btn-outline-danger">削除</button>
                                             </form>
                                         </div>
+                                        @if ($menuGacha->flags->isNotEmpty())
+                                            <fieldset class="col-12 mt-3">
+                                                <legend class="fs-6 mb-2">フラグ</legend>
+                                                <div class="d-flex flex-wrap gap-3">
+                                                    @foreach ($menuGacha->flags as $flag)
+                                                        <div class="form-check">
+                                                            <input
+                                                                type="checkbox"
+                                                                id="item-{{ $item->getKey() }}-flag-{{ $flag->getKey() }}"
+                                                                name="items[{{ $item->getKey() }}][flag_ids][]"
+                                                                form="menu-gacha-edit-form"
+                                                                class="form-check-input"
+                                                                value="{{ $flag->getKey() }}"
+                                                                @checked(in_array($flag->getKey(), (array) (old('items.'.$item->getKey()) !== null ? old('items.'.$item->getKey().'.flag_ids', []) : $item->flags->modelKeys())))
+                                                            >
+                                                            <label class="form-check-label" for="item-{{ $item->getKey() }}-flag-{{ $flag->getKey() }}">{{ $flag->name }}</label>
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                            </fieldset>
+                                        @endif
                                     </div>
                                 @empty
                                     <p class="text-secondary mb-0">登録済みの食事はありません。</p>
@@ -270,6 +314,64 @@
                                     <div class="col-md-2 d-grid">
                                         <button type="submit" class="btn btn-success">追加</button>
                                     </div>
+                                    @if ($menuGacha->flags->isNotEmpty())
+                                        <fieldset class="col-12 mt-3">
+                                            <legend class="fs-6 mb-2">フラグ</legend>
+                                            <div class="d-flex flex-wrap gap-3">
+                                                @foreach ($menuGacha->flags as $flag)
+                                                    <div class="form-check">
+                                                        <input type="checkbox" id="new-item-flag-{{ $flag->getKey() }}" name="new_flag_ids[]" class="form-check-input" value="{{ $flag->getKey() }}" @checked(in_array($flag->getKey(), (array) old('new_flag_ids', [])))>
+                                                        <label class="form-check-label" for="new-item-flag-{{ $flag->getKey() }}">{{ $flag->name }}</label>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        </fieldset>
+                                    @endif
+                                </div>
+                            </form>
+                            <hr class="my-4">
+                            <h2 class="h5 fw-bold mb-2">フラグを管理</h2>
+                            <p class="text-secondary small">学割など、食事に付けるフラグを登録できます。</p>
+
+                            <div class="d-flex flex-column gap-3 mb-4">
+                                @forelse ($menuGacha->flags as $flag)
+                                    <div class="border rounded p-3 bg-white">
+                                        <form method="POST" action="{{ route('menu-gachas.flags.update', ['id' => $menuGacha->getKey(), 'flagId' => $flag->getKey()]) }}" class="row g-2 align-items-end">
+                                            @csrf
+                                            @method('PATCH')
+                                            <div class="col-sm">
+                                                <label for="flag-name-{{ $flag->getKey() }}" class="form-label">フラグ名</label>
+                                                <input type="text" id="flag-name-{{ $flag->getKey() }}" name="flag_name" class="form-control" value="{{ $flag->name }}" maxlength="255" required>
+                                            </div>
+                                            <div class="col-sm-auto d-grid">
+                                                <button type="submit" class="btn btn-outline-primary">保存</button>
+                                            </div>
+                                        </form>
+                                        <form method="POST" action="{{ route('menu-gachas.flags.destroy', ['id' => $menuGacha->getKey(), 'flagId' => $flag->getKey()]) }}" class="mt-2" onsubmit="return confirm('このフラグを削除しますか？');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-outline-danger">削除</button>
+                                        </form>
+                                    </div>
+                                @empty
+                                    <p class="text-secondary mb-0">登録済みのフラグはありません。</p>
+                                @endforelse
+                            </div>
+
+                            <form method="POST" action="{{ route('menu-gachas.flags.store', ['id' => $menuGacha->getKey()]) }}" class="border rounded p-3 bg-white">
+                                @csrf
+                                <h3 class="h6 fw-bold mb-3">フラグを追加</h3>
+                                <div class="row g-2 align-items-end">
+                                    <div class="col-sm">
+                                        <label for="new-flag-name" class="form-label">フラグ名</label>
+                                        <input type="text" id="new-flag-name" name="new_flag_name" class="form-control @error('new_flag_name') is-invalid @enderror" value="{{ old('new_flag_name') }}" maxlength="255" placeholder="例：学割" required>
+                                        @error('new_flag_name')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                    <div class="col-sm-auto d-grid">
+                                        <button type="submit" class="btn btn-success">追加</button>
+                                    </div>
                                 </div>
                             </form>
                         </section>
@@ -280,7 +382,7 @@
         </main>
 
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-        <script type="application/json" id="gacha-items">@json($menuGacha->items->map(fn ($item) => ['name' => $item->item_name, 'price' => $item->price])->values(), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT)</script>
+        <script type="application/json" id="gacha-items">@json($menuGacha->items->map(fn ($item) => ['name' => $item->item_name, 'price' => $item->price, 'flagIds' => $item->flags->modelKeys()])->values(), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT)</script>
         <script type="module" src="{{ asset('js/menu-gacha.js') }}"></script>
     </body>
 </html>

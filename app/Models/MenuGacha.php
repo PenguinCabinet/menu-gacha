@@ -26,4 +26,9 @@ class MenuGacha extends Model
     {
         return $this->hasMany(MenuGachaItem::class);
     }
+
+    public function flags(): HasMany
+    {
+        return $this->hasMany(MenuGachaFlag::class);
+    }
 }

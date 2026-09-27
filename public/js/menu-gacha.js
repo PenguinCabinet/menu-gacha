@@ -1,0 +1,78 @@
+export function pull_gacha_by_menu(items, budget, random = Math.random) {
+    const selectedItems = [];
+    const selectedFreeItemIndexes = new Set();
+    let totalPrice = 0;
+
+    while (true) {
+        const affordableItems = items
+            .map((item, index) => ({ item, index, price: Number(item.price) }))
+            .filter(({ index, price }) => (
+                totalPrice + price <= budget && (price > 0 || !selectedFreeItemIndexes.has(index))
+            ));
+
+        if (affordableItems.length === 0) {
+            break;
+        }
+
+        const selection = affordableItems[Math.floor(random() * affordableItems.length)];
+        selectedItems.push(selection.item);
+        totalPrice += selection.price;
+
+        if (selection.price === 0) {
+            selectedFreeItemIndexes.add(selection.index);
+        }
+    }
+
+    return { items: selectedItems, totalPrice };
+}
+
+if (typeof document !== 'undefined') {
+    const gachaItems = JSON.parse(document.getElementById('gacha-items').textContent);
+    const gachaBudgetInput = document.getElementById('gacha-budget');
+    const gachaResult = document.getElementById('gacha-result');
+    const gachaTotal = document.getElementById('gacha-total');
+
+    document.getElementById('run-gacha').addEventListener('click', () => {
+        const budget = Number(gachaBudgetInput.value);
+
+        gachaResult.replaceChildren();
+        gachaTotal.textContent = '';
+
+        if (!Number.isSafeInteger(budget) || budget < 0) {
+            gachaResult.textContent = '0円以上の予算を入力してください。';
+            return;
+        }
+
+        if (gachaItems.length === 0) {
+            gachaResult.textContent = '食事がまだ登録されていません。';
+            return;
+        }
+
+        const { items: selectedItems, totalPrice } = pull_gacha_by_menu(gachaItems, budget);
+
+        if (selectedItems.length === 0) {
+            gachaResult.textContent = '予算内で選べる食事がありません。';
+            return;
+        }
+
+        const list = document.createElement('div');
+        list.className = 'd-flex flex-column gap-2';
+
+        for (const item of selectedItems) {
+            const row = document.createElement('div');
+            row.className = 'd-flex justify-content-between border-bottom py-2';
+
+            const name = document.createElement('span');
+            name.textContent = item.name;
+
+            const price = document.createElement('span');
+            price.textContent = `${Number(item.price).toLocaleString()}円`;
+
+            row.append(name, price);
+            list.append(row);
+        }
+
+        gachaResult.append(list);
+        gachaTotal.textContent = `合計金額：${totalPrice.toLocaleString()}円`;
+    });
+}

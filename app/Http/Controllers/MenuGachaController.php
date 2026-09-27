@@ -33,14 +33,25 @@ class MenuGachaController extends Controller
     public function update(Request $request, int $id): RedirectResponse
     {
         $menuGacha = $request->user()->menuGachas()->findOrFail($id);
-        $validated = $request->validate([
+        $rules = [
             'name' => ['required', 'string', 'max:255'],
             'is_published' => ['sometimes', 'required', 'boolean'],
             'items' => ['sometimes', 'array'],
             'items.*' => ['array:item_name,price,flag_ids'],
             'items.*.flag_ids' => ['sometimes', 'array'],
             'items.*.flag_ids.*' => ['integer', 'distinct', Rule::exists('menu_gacha_flags', 'id')->where('menu_gacha_id', $menuGacha->getKey())],
-        ]);
+            'flags' => ['sometimes', 'array'],
+        ];
+
+        foreach ($request->input('flags', []) as $flagId => $_) {
+            $flag = $menuGacha->flags()->findOrFail($flagId);
+            $rules["flags.{$flagId}.name"] = [
+                'required', 'string', 'max:255',
+                Rule::unique('menu_gacha_flags', 'name')->where('menu_gacha_id', $menuGacha->getKey())->ignore($flag->getKey()),
+            ];
+        }
+
+        $validated = $request->validate($rules);
 
         DB::transaction(function () use ($menuGacha, $validated): void {
             $menuGacha->update([
@@ -52,6 +63,10 @@ class MenuGachaController extends Controller
                 $item = $menuGacha->items()->findOrFail($itemId);
                 $item->update(collect($itemData)->only(['item_name', 'price'])->all());
                 $item->flags()->sync($itemData['flag_ids'] ?? []);
+            }
+
+            foreach ($validated['flags'] ?? [] as $flagId => $flagData) {
+                $menuGacha->flags()->findOrFail($flagId)->update(['name' => $flagData['name']]);
             }
         });
 

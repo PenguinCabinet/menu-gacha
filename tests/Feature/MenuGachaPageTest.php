@@ -121,4 +121,105 @@ class MenuGachaPageTest extends TestCase
         ]));
         $this->assertDatabaseMissing('menu_gacha_items', ['id' => $item->getKey()]);
     }
+
+    public function test_item_edit_screen_shows_flag_checkboxes_and_selected_values(): void
+    {
+        $user = User::factory()->create();
+        $menu = $user->menuGachas()->create(['name' => 'ランチ']);
+        $item = $menu->items()->create(['item_name' => 'カレー', 'price' => 800]);
+        $discount = $menu->flags()->create(['name' => '学割']);
+        $limited = $menu->flags()->create(['name' => '期間限定']);
+        $item->flags()->attach($discount);
+
+        $response = $this->actingAs($user)->get(route('menu-gachas.show', ['id' => $menu->id, 'tab' => 'edit']));
+
+        $response
+            ->assertSee('items['.$item->id.'][flag_ids][]', false)
+            ->assertSee('item-'.$item->id.'-flag-'.$discount->id, false)
+            ->assertSee('item-'.$item->id.'-flag-'.$limited->id, false);
+        $this->assertMatchesRegularExpression('/id="item-'.$item->id.'-flag-'.$discount->id.'"[^>]*checked/s', $response->getContent());
+        $this->assertDoesNotMatchRegularExpression('/id="item-'.$item->id.'-flag-'.$limited->id.'"[^>]*checked/s', $response->getContent());
+    }
+
+    public function test_item_flags_can_be_selected_and_all_cleared_with_the_edit_form(): void
+    {
+        $user = User::factory()->create();
+        $menu = $user->menuGachas()->create(['name' => 'ランチ']);
+        $item = $menu->items()->create(['item_name' => 'カレー', 'price' => 800]);
+        $discount = $menu->flags()->create(['name' => '学割']);
+        $limited = $menu->flags()->create(['name' => '期間限定']);
+
+        $this->actingAs($user)->patch(route('menu-gachas.update', ['id' => $menu->id]), [
+            'name' => 'ランチ',
+            'items' => [$item->id => ['item_name' => 'カレー', 'price' => 800, 'flag_ids' => [$discount->id, $limited->id]]],
+        ])->assertRedirect(route('menu-gachas.show', ['id' => $menu->id, 'tab' => 'edit']));
+
+        $this->assertDatabaseHas('menu_gacha_flag_menu_gacha_item', ['menu_gacha_item_id' => $item->id, 'menu_gacha_flag_id' => $discount->id]);
+        $this->assertDatabaseHas('menu_gacha_flag_menu_gacha_item', ['menu_gacha_item_id' => $item->id, 'menu_gacha_flag_id' => $limited->id]);
+
+        $this->patch(route('menu-gachas.update', ['id' => $menu->id]), [
+            'name' => 'ランチ',
+            'items' => [$item->id => ['item_name' => 'カレー', 'price' => 800]],
+        ])->assertSessionHasNoErrors();
+
+        $this->assertDatabaseCount('menu_gacha_flag_menu_gacha_item', 0);
+    }
+
+    public function test_new_item_can_be_created_with_multiple_flags(): void
+    {
+        $user = User::factory()->create();
+        $menu = $user->menuGachas()->create(['name' => 'ランチ']);
+        $discount = $menu->flags()->create(['name' => '学割']);
+        $limited = $menu->flags()->create(['name' => '期間限定']);
+
+        $this->actingAs($user)->post(route('menu-gachas.items.store', ['id' => $menu->id]), [
+            'new_item_name' => 'カレー', 'new_price' => 800,
+            'new_flag_ids' => [$discount->id, $limited->id],
+        ])->assertRedirect(route('menu-gachas.show', ['id' => $menu->id, 'tab' => 'edit']));
+
+        $item = $menu->items()->firstOrFail();
+        $this->assertDatabaseHas('menu_gacha_flag_menu_gacha_item', ['menu_gacha_item_id' => $item->id, 'menu_gacha_flag_id' => $discount->id]);
+        $this->assertDatabaseHas('menu_gacha_flag_menu_gacha_item', ['menu_gacha_item_id' => $item->id, 'menu_gacha_flag_id' => $limited->id]);
+    }
+
+    public function test_flags_from_another_menu_are_rejected_without_updating_the_item(): void
+    {
+        $user = User::factory()->create();
+        $menu = $user->menuGachas()->create(['name' => 'ランチ']);
+        $item = $menu->items()->create(['item_name' => 'カレー', 'price' => 800]);
+        $otherMenu = $user->menuGachas()->create(['name' => 'ディナー']);
+        $foreignFlag = $otherMenu->flags()->create(['name' => '学割']);
+
+        $this->actingAs($user)->patch(route('menu-gachas.update', ['id' => $menu->id]), [
+            'name' => '変更後',
+            'items' => [$item->id => ['item_name' => '変更後', 'price' => 900, 'flag_ids' => [$foreignFlag->id]]],
+        ])->assertSessionHasErrors('items.'.$item->id.'.flag_ids.0');
+
+        $this->post(route('menu-gachas.items.store', ['id' => $menu->id]), [
+            'new_item_name' => 'うどん', 'new_price' => 500, 'new_flag_ids' => [$foreignFlag->id],
+        ])->assertSessionHasErrors('new_flag_ids.0');
+
+        $this->assertDatabaseHas('menu_gacha_items', ['id' => $item->id, 'item_name' => 'カレー', 'price' => 800]);
+        $this->assertDatabaseCount('menu_gacha_items', 1);
+        $this->assertDatabaseCount('menu_gacha_flag_menu_gacha_item', 0);
+    }
+
+    public function test_deleting_an_item_or_flag_removes_its_assignments(): void
+    {
+        $user = User::factory()->create();
+        $menu = $user->menuGachas()->create(['name' => 'ランチ']);
+        $firstItem = $menu->items()->create(['item_name' => 'カレー', 'price' => 800]);
+        $secondItem = $menu->items()->create(['item_name' => 'うどん', 'price' => 500]);
+        $flag = $menu->flags()->create(['name' => '学割']);
+        $firstItem->flags()->attach($flag);
+        $secondItem->flags()->attach($flag);
+
+        $this->actingAs($user)->delete(route('menu-gachas.items.destroy', ['id' => $menu->id, 'itemId' => $firstItem->id]))
+            ->assertRedirect();
+        $this->assertDatabaseCount('menu_gacha_flag_menu_gacha_item', 1);
+
+        $this->delete(route('menu-gachas.flags.destroy', ['id' => $menu->id, 'flagId' => $flag->id]))
+            ->assertRedirect();
+        $this->assertDatabaseCount('menu_gacha_flag_menu_gacha_item', 0);
+    }
 }

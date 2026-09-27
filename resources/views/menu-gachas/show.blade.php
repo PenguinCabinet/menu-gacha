@@ -220,6 +220,27 @@
                                                 <button type="submit" class="btn btn-outline-danger">削除</button>
                                             </form>
                                         </div>
+                                        @if ($menuGacha->flags->isNotEmpty())
+                                            <fieldset class="col-12 mt-3">
+                                                <legend class="fs-6 mb-2">フラグ</legend>
+                                                <div class="d-flex flex-wrap gap-3">
+                                                    @foreach ($menuGacha->flags as $flag)
+                                                        <div class="form-check">
+                                                            <input
+                                                                type="checkbox"
+                                                                id="item-{{ $item->getKey() }}-flag-{{ $flag->getKey() }}"
+                                                                name="items[{{ $item->getKey() }}][flag_ids][]"
+                                                                form="menu-gacha-edit-form"
+                                                                class="form-check-input"
+                                                                value="{{ $flag->getKey() }}"
+                                                                @checked(in_array($flag->getKey(), (array) (old('items.'.$item->getKey()) !== null ? old('items.'.$item->getKey().'.flag_ids', []) : $item->flags->modelKeys())))
+                                                            >
+                                                            <label class="form-check-label" for="item-{{ $item->getKey() }}-flag-{{ $flag->getKey() }}">{{ $flag->name }}</label>
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                            </fieldset>
+                                        @endif
                                     </div>
                                 @empty
                                     <p class="text-secondary mb-0">登録済みの食事はありません。</p>
@@ -270,6 +291,19 @@
                                     <div class="col-md-2 d-grid">
                                         <button type="submit" class="btn btn-success">追加</button>
                                     </div>
+                                    @if ($menuGacha->flags->isNotEmpty())
+                                        <fieldset class="col-12 mt-3">
+                                            <legend class="fs-6 mb-2">フラグ</legend>
+                                            <div class="d-flex flex-wrap gap-3">
+                                                @foreach ($menuGacha->flags as $flag)
+                                                    <div class="form-check">
+                                                        <input type="checkbox" id="new-item-flag-{{ $flag->getKey() }}" name="new_flag_ids[]" class="form-check-input" value="{{ $flag->getKey() }}" @checked(in_array($flag->getKey(), (array) old('new_flag_ids', [])))>
+                                                        <label class="form-check-label" for="new-item-flag-{{ $flag->getKey() }}">{{ $flag->name }}</label>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        </fieldset>
+                                    @endif
                                 </div>
                             </form>
                             <hr class="my-4">

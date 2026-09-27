@@ -31,6 +31,19 @@
                     <ul class="nav nav-tabs" id="menu-gacha-tabs" role="tablist" aria-label="メニューガチャ">
                         <li class="nav-item" role="presentation">
                             <button
+                                class="nav-link fw-semibold"
+                                id="gacha-tab"
+                                data-bs-toggle="tab"
+                                data-bs-target="#gacha-panel"
+                                type="button"
+                                role="tab"
+                                aria-controls="gacha-panel"
+                                aria-selected="false"
+                                tabindex="-1"
+                            >ガチャ</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button
                                 class="nav-link {{ $isEditing ? '' : 'active' }} fw-semibold"
                                 id="preview-tab"
                                 data-bs-toggle="tab"
@@ -58,6 +71,13 @@
 
                 <div class="card-body p-4 p-md-5">
                     <div class="tab-content">
+                        <section
+                            class="tab-pane fade"
+                            id="gacha-panel"
+                            role="tabpanel"
+                            aria-labelledby="gacha-tab"
+                            tabindex="0"
+                        ></section>
                         <section
                             class="tab-pane fade {{ $isEditing ? '' : 'show active' }}"
                             id="preview-panel"

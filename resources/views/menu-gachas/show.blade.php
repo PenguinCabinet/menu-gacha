@@ -77,7 +77,32 @@
                             role="tabpanel"
                             aria-labelledby="gacha-tab"
                             tabindex="0"
-                        ></section>
+                        >
+                            <h1 class="h4 fw-bold mb-3">メニューガチャ</h1>
+                            <p class="text-secondary">予算内で食事をランダムに選びます。同じ食事が複数回選ばれることがあります。</p>
+
+                            <div class="row g-3 align-items-end mb-4">
+                                <div class="col-sm-6 col-md-4">
+                                    <label for="gacha-budget" class="form-label">予算（円）</label>
+                                    <input
+                                        type="number"
+                                        id="gacha-budget"
+                                        class="form-control"
+                                        value="1000"
+                                        min="0"
+                                        step="1"
+                                    >
+                                </div>
+                                <div class="col-sm-auto d-grid">
+                                    <button type="button" id="run-gacha" class="btn btn-primary">ガチャを回す</button>
+                                </div>
+                            </div>
+
+                            <div id="gacha-result" aria-live="polite">
+                                <p class="text-secondary mb-0">ボタンを押してメニューを選びましょう。</p>
+                            </div>
+                            <p id="gacha-total" class="fw-bold mt-3 mb-0" aria-live="polite"></p>
+                        </section>
                         <section
                             class="tab-pane fade {{ $isEditing ? '' : 'show active' }}"
                             id="preview-panel"
@@ -233,5 +258,77 @@
         </main>
 
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+        <script>
+            const gachaItems = @json($menuGacha->items->map(fn ($item) => ['name' => $item->item_name, 'price' => $item->price])->values());
+            const gachaBudgetInput = document.getElementById('gacha-budget');
+            const gachaResult = document.getElementById('gacha-result');
+            const gachaTotal = document.getElementById('gacha-total');
+
+            document.getElementById('run-gacha').addEventListener('click', () => {
+                const budget = Number(gachaBudgetInput.value);
+
+                gachaResult.replaceChildren();
+                gachaTotal.textContent = '';
+
+                if (!Number.isSafeInteger(budget) || budget < 0) {
+                    gachaResult.textContent = '0円以上の予算を入力してください。';
+                    return;
+                }
+
+                if (gachaItems.length === 0) {
+                    gachaResult.textContent = '食事がまだ登録されていません。';
+                    return;
+                }
+
+                const selectedItems = [];
+                const selectedFreeItemIndexes = new Set();
+                let totalPrice = 0;
+
+                while (true) {
+                    const affordableItems = gachaItems
+                        .map((item, index) => ({ item, index, price: Number(item.price) }))
+                        .filter(({ index, price }) => (
+                            totalPrice + price <= budget && (price > 0 || !selectedFreeItemIndexes.has(index))
+                        ));
+
+                    if (affordableItems.length === 0) {
+                        break;
+                    }
+
+                    const selection = affordableItems[Math.floor(Math.random() * affordableItems.length)];
+                    selectedItems.push(selection.item);
+                    totalPrice += selection.price;
+
+                    if (selection.price === 0) {
+                        selectedFreeItemIndexes.add(selection.index);
+                    }
+                }
+
+                if (selectedItems.length === 0) {
+                    gachaResult.textContent = '予算内で選べる食事がありません。';
+                    return;
+                }
+
+                const list = document.createElement('div');
+                list.className = 'd-flex flex-column gap-2';
+
+                for (const item of selectedItems) {
+                    const row = document.createElement('div');
+                    row.className = 'd-flex justify-content-between border-bottom py-2';
+
+                    const name = document.createElement('span');
+                    name.textContent = item.name;
+
+                    const price = document.createElement('span');
+                    price.textContent = `${Number(item.price).toLocaleString()}円`;
+
+                    row.append(name, price);
+                    list.append(row);
+                }
+
+                gachaResult.append(list);
+                gachaTotal.textContent = `合計金額：${totalPrice.toLocaleString()}円`;
+            });
+        </script>
     </body>
 </html>

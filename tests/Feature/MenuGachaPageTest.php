@@ -19,6 +19,8 @@ class MenuGachaPageTest extends TestCase
             ->get(route('menu-gachas.show', ['id' => $menuGacha->getKey()]));
 
         $response->assertOk()
+            ->assertSee('ガチャ')
+            ->assertSee('ガチャを回す')
             ->assertSee('プレビュー')
             ->assertSee('編集')
             ->assertSee('週末ごはん');

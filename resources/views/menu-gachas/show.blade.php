@@ -31,6 +31,19 @@
                     <ul class="nav nav-tabs" id="menu-gacha-tabs" role="tablist" aria-label="メニューガチャ">
                         <li class="nav-item" role="presentation">
                             <button
+                                class="nav-link fw-semibold"
+                                id="gacha-tab"
+                                data-bs-toggle="tab"
+                                data-bs-target="#gacha-panel"
+                                type="button"
+                                role="tab"
+                                aria-controls="gacha-panel"
+                                aria-selected="false"
+                                tabindex="-1"
+                            >ガチャ</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button
                                 class="nav-link {{ $isEditing ? '' : 'active' }} fw-semibold"
                                 id="preview-tab"
                                 data-bs-toggle="tab"
@@ -58,6 +71,38 @@
 
                 <div class="card-body p-4 p-md-5">
                     <div class="tab-content">
+                        <section
+                            class="tab-pane fade"
+                            id="gacha-panel"
+                            role="tabpanel"
+                            aria-labelledby="gacha-tab"
+                            tabindex="0"
+                        >
+                            <h1 class="h4 fw-bold mb-3">メニューガチャ</h1>
+                            <p class="text-secondary">予算内で食事をランダムに選びます。同じ食事が複数回選ばれることがあります。</p>
+
+                            <div class="row g-3 align-items-end mb-4">
+                                <div class="col-sm-6 col-md-4">
+                                    <label for="gacha-budget" class="form-label">予算（円）</label>
+                                    <input
+                                        type="number"
+                                        id="gacha-budget"
+                                        class="form-control"
+                                        value="1000"
+                                        min="0"
+                                        step="1"
+                                    >
+                                </div>
+                                <div class="col-sm-auto d-grid">
+                                    <button type="button" id="run-gacha" class="btn btn-primary">ガチャを回す</button>
+                                </div>
+                            </div>
+
+                            <div id="gacha-result" aria-live="polite">
+                                <p class="text-secondary mb-0">ボタンを押してメニューを選びましょう。</p>
+                            </div>
+                            <p id="gacha-total" class="fw-bold mt-3 mb-0" aria-live="polite"></p>
+                        </section>
                         <section
                             class="tab-pane fade {{ $isEditing ? '' : 'show active' }}"
                             id="preview-panel"
@@ -213,5 +258,7 @@
         </main>
 
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+        <script type="application/json" id="gacha-items">@json($menuGacha->items->map(fn ($item) => ['name' => $item->item_name, 'price' => $item->price])->values(), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT)</script>
+        <script type="module" src="{{ asset('js/menu-gacha.js') }}"></script>
     </body>
 </html>

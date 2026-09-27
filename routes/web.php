@@ -21,6 +21,16 @@ Route::middleware('auth')->group(function () {
     Route::get('/menu/{id}', [MenuGachaController::class, 'show'])
         ->whereNumber('id')
         ->name('menu-gachas.show');
+    Route::patch('/menu/{id}', [MenuGachaController::class, 'update'])
+        ->whereNumber('id')
+        ->name('menu-gachas.update');
+    Route::post('/menu/{id}/items', [MenuGachaController::class, 'storeItem'])
+        ->whereNumber('id')
+        ->name('menu-gachas.items.store');
+    Route::delete('/menu/{id}/items/{itemId}', [MenuGachaController::class, 'destroyItem'])
+        ->whereNumber('id')
+        ->whereNumber('itemId')
+        ->name('menu-gachas.items.destroy');
 });
 
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');

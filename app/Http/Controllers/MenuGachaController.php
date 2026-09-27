@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class MenuGachaController extends Controller
@@ -19,8 +20,59 @@ class MenuGachaController extends Controller
 
     public function show(Request $request, int $id): View
     {
-        $menuGacha = $request->user()->menuGachas()->findOrFail($id);
+        $menuGacha = $request->user()->menuGachas()->with('items')->findOrFail($id);
 
         return view('menu-gachas.show', ['menuGacha' => $menuGacha]);
+    }
+
+    public function update(Request $request, int $id): RedirectResponse
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+'items' => ['sometimes', 'array'],
+            'items.*' => ['array:item_name,price'],
+        ]);
+
+        $menuGacha = $request->user()->menuGachas()->findOrFail($id);
+
+        DB::transaction(function () use ($menuGacha, $validated): void {
+            $menuGacha->update(['name' => $validated['name']]);
+
+            foreach ($validated['items'] ?? [] as $itemId => $itemData) {
+                $menuGacha->items()->findOrFail($itemId)->update($itemData);
+            }
+        });
+
+        return redirect()
+            ->route('menu-gachas.show', ['id' => $menuGacha->getKey(), 'tab' => 'edit'])
+            ->with('message', 'メニューガチャを更新しました。');
+    }
+
+    public function storeItem(Request $request, int $id): RedirectResponse
+    {
+        $validated = $request->validate([
+            'new_item_name' => ['required', 'string', 'max:255'],
+            'new_price' => ['required', 'integer', 'min:0'],
+        ]);
+
+        $menuGacha = $request->user()->menuGachas()->findOrFail($id);
+        $menuGacha->items()->create([
+            'item_name' => $validated['new_item_name'],
+            'price' => $validated['new_price'],
+        ]);
+
+        return redirect()
+            ->route('menu-gachas.show', ['id' => $menuGacha->getKey(), 'tab' => 'edit'])
+            ->with('message', '食事を追加しました。');
+    }
+
+    public function destroyItem(Request $request, int $id, int $itemId): RedirectResponse
+    {
+        $menuGacha = $request->user()->menuGachas()->findOrFail($id);
+        $menuGacha->items()->findOrFail($itemId)->delete();
+
+        return redirect()
+            ->route('menu-gachas.show', ['id' => $menuGacha->getKey(), 'tab' => 'edit'])
+            ->with('message', '食事を削除しました。');
     }
 }

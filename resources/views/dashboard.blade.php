@@ -8,8 +8,14 @@
     </head>
     <body class="bg-light">
         <main class="container py-4 py-lg-5" style="max-width: 960px;">
-            <header class="mb-4">
-                <h1 class="mb-2">Dashboard</h1>
+            <header class="mb-4 d-flex align-items-center justify-content-between gap-3">
+                <h1 class="mb-0">Dashboard</h1>
+                <a
+                    href="{{ route('users.show', ['name' => auth()->user()->name]) }}"
+                    class=""
+                >
+                    {{ auth()->user()->name }}のユーザーページ
+                </a>
             </header>
 
             @if (session('message'))

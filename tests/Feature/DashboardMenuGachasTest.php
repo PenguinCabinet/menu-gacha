@@ -22,7 +22,8 @@ class DashboardMenuGachasTest extends TestCase
         $response->assertOk()
             ->assertSeeText('自分のガチャ')
             ->assertDontSeeText('他の人のガチャ')
-            ->assertSee(route('menu-gachas.show', ['id' => $ownMenuGacha->getKey()]));
+            ->assertSee(route('menu-gachas.show', ['id' => $ownMenuGacha->getKey()]))
+            ->assertSee(route('users.show', ['name' => $user->name]));
     }
 
     public function test_dashboard_shows_an_empty_state_when_the_user_has_no_menu_gachas(): void

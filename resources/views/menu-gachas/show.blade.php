@@ -30,6 +30,15 @@
 
             <section class="card border-0 shadow-sm">
                 <div class="card-header bg-white border-bottom-0 px-3 px-md-4 pt-3">
+                    <p class="small fw-semibold text-uppercase text-secondary mb-2">Menu Gacha</p>
+                    <h1 class="h2 fw-bold mb-3">{{ $menuGacha->name }}</h1>
+                    <p class="text-secondary mb-4">
+                        作成日：
+                        <time datetime="{{ $menuGacha->created_at?->toIso8601String() }}">
+                            {{ $menuGacha->created_at?->format('Y年n月j日') }}
+                        </time>
+                    </p>
+
                     <ul class="nav nav-tabs" id="menu-gacha-tabs" role="tablist" aria-label="メニューガチャ">
                         <li class="nav-item" role="presentation">
                             <button
@@ -125,14 +134,6 @@
                             aria-labelledby="preview-tab"
                             tabindex="0"
                         >
-                            <p class="small fw-semibold text-uppercase text-secondary mb-2">Menu Gacha</p>
-                            <h1 class="h2 fw-bold mb-3">{{ $menuGacha->name }}</h1>
-                            <p class="text-secondary mb-4">
-                                作成日時：
-                                <time datetime="{{ $menuGacha->created_at?->toIso8601String() }}">
-                                    {{ $menuGacha->created_at?->format('Y年n月j日 H:i') }}
-                                </time>
-                            </p>
 
                             <h2 class="h5 fw-bold mb-3">食事</h2>
                             @forelse ($menuGacha->items as $item)

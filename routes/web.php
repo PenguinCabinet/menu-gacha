@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\MenuGachaController;
 use App\Http\Controllers\MenuGachaFlagController;
+use App\Http\Controllers\UserPageController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -14,6 +15,8 @@ Route::get('/', function () {
 Route::get('/menu/{id}', [MenuGachaController::class, 'show'])
     ->whereNumber('id')
     ->name('menu-gachas.show');
+
+Route::get('/u/{name}', [UserPageController::class, 'show'])->name('users.show');
 
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', function (Request $request) {

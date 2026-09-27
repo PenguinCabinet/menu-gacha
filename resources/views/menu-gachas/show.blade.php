@@ -8,7 +8,9 @@
     </head>
     <body class="bg-light">
         <main class="container py-4 py-lg-5" style="max-width: 960px;">
-            <a href="{{ route('dashboard') }}" class="btn btn-link px-0 mb-3">← ダッシュボードに戻る</a>
+            @if ($isOwner)
+                <a href="{{ route('dashboard') }}" class="btn btn-link px-0 mb-3">← ダッシュボードに戻る</a>
+            @endif
 
             @if (session('message'))
                 <div class="alert alert-success" role="status">{{ session('message') }}</div>
@@ -24,7 +26,7 @@
                 </div>
             @endif
 
-            @php($isEditing = request()->query('tab') === 'edit' || $errors->any())
+            @php($isEditing = $isOwner && (request()->query('tab') === 'edit' || $errors->any()))
 
             <section class="card border-0 shadow-sm">
                 <div class="card-header bg-white border-bottom-0 px-3 px-md-4 pt-3">
@@ -54,18 +56,20 @@
                                 aria-selected="{{ $isEditing ? 'false' : 'true' }}"
                             >プレビュー</button>
                         </li>
-                        <li class="nav-item" role="presentation">
-                            <button
-                                class="nav-link {{ $isEditing ? 'active' : '' }} fw-semibold"
-                                id="edit-tab"
-                                data-bs-toggle="tab"
-                                data-bs-target="#edit-panel"
-                                type="button"
-                                role="tab"
-                                aria-controls="edit-panel"
-                                aria-selected="{{ $isEditing ? 'true' : 'false' }}"
-                            >編集</button>
-                        </li>
+                        @if ($isOwner)
+                            <li class="nav-item" role="presentation">
+                                <button
+                                    class="nav-link {{ $isEditing ? 'active' : '' }} fw-semibold"
+                                    id="edit-tab"
+                                    data-bs-toggle="tab"
+                                    data-bs-target="#edit-panel"
+                                    type="button"
+                                    role="tab"
+                                    aria-controls="edit-panel"
+                                    aria-selected="{{ $isEditing ? 'true' : 'false' }}"
+                                >編集</button>
+                            </li>
+                        @endif
                     </ul>
                 </div>
 
@@ -130,6 +134,7 @@
                             @endforelse
                         </section>
 
+                        @if ($isOwner)
                         <section
                             class="tab-pane fade {{ $isEditing ? 'show active' : '' }}"
                             id="edit-panel"
@@ -152,6 +157,22 @@
                                         required
                                     >
                                     @error('name')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                                <div class="mb-3">
+                                    <label for="is-published" class="form-label">公開設定</label>
+                                    <select
+                                        id="is-published"
+                                        name="is_published"
+                                        form="menu-gacha-edit-form"
+                                        class="form-select @error('is_published') is-invalid @enderror"
+                                    >
+                                        <option value="0" @selected(old('is_published', $menuGacha->is_published ? '1' : '0') == '0')>非公開</option>
+                                        <option value="1" @selected(old('is_published', $menuGacha->is_published ? '1' : '0') == '1')>公開</option>
+                                    </select>
+                                    <div class="form-text">公開すると、ログインせずにこのメニューを閲覧できます。</div>
+                                    @error('is_published')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
@@ -252,6 +273,7 @@
                                 </div>
                             </form>
                         </section>
+                        @endif
                     </div>
                 </div>
             </section>

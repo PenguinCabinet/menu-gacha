@@ -7,10 +7,15 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['name'])]
+#[Fillable(['name', 'is_published'])]
 class MenuGacha extends Model
 {
     public const UPDATED_AT = null;
+
+    protected function casts(): array
+    {
+        return ['is_published' => 'boolean'];
+    }
 
     public function user(): BelongsTo
     {

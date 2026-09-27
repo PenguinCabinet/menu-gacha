@@ -83,8 +83,6 @@
                             tabindex="0"
                         >
                             <h1 class="h4 fw-bold mb-3">メニューガチャ</h1>
-                            <p class="text-secondary">予算内で食事をランダムに選びます。同じ食事が複数回選ばれることがあります。</p>
-
                             <div class="row g-3 align-items-end mb-4">
                                 <div class="col-sm-6 col-md-4">
                                     <label for="gacha-budget" class="form-label">予算（円）</label>
@@ -117,7 +115,6 @@
                             @endif
 
                             <div id="gacha-result" aria-live="polite">
-                                <p class="text-secondary mb-0">ボタンを押してメニューを選びましょう。</p>
                             </div>
                             <p id="gacha-total" class="fw-bold mt-3 mb-0" aria-live="polite"></p>
                         </section>

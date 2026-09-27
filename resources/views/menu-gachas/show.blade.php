@@ -102,6 +102,20 @@
                                 </div>
                             </div>
 
+                            @if ($menuGacha->flags->isNotEmpty())
+                                <fieldset class="mb-4" id="gacha-flags">
+                                    <legend class="fs-6 fw-semibold mb-2">対象のフラグ</legend>
+                                    <div class="d-flex flex-wrap gap-3">
+                                        @foreach ($menuGacha->flags as $flag)
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" id="gacha-flag-{{ $flag->getKey() }}" value="{{ $flag->getKey() }}" checked>
+                                                <label class="form-check-label" for="gacha-flag-{{ $flag->getKey() }}">{{ $flag->name }}を含む</label>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </fieldset>
+                            @endif
+
                             <div id="gacha-result" aria-live="polite">
                                 <p class="text-secondary mb-0">ボタンを押してメニューを選びましょう。</p>
                             </div>
@@ -368,7 +382,7 @@
         </main>
 
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-        <script type="application/json" id="gacha-items">@json($menuGacha->items->map(fn ($item) => ['name' => $item->item_name, 'price' => $item->price])->values(), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT)</script>
+        <script type="application/json" id="gacha-items">@json($menuGacha->items->map(fn ($item) => ['name' => $item->item_name, 'price' => $item->price, 'flagIds' => $item->flags->modelKeys()])->values(), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT)</script>
         <script type="module" src="{{ asset('js/menu-gacha.js') }}"></script>
     </body>
 </html>

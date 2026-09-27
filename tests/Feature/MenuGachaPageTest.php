@@ -157,10 +157,10 @@ class MenuGachaPageTest extends TestCase
         $response = $this->get(route('menu-gachas.show', ['id' => $menu->id]));
 
         $response->assertOk()
-            ->assertSeeInOrder(['カレー', '学割', '期間限定', '800円', 'うどん', '期間限定', '500円', 'サラダ', '300円'])
-            ->assertDontSee('未使用');
+            ->assertSeeInOrder(['カレー', '学割', '期間限定', '800円', 'うどん', '期間限定', '500円', 'サラダ', '300円']);
         $this->assertSame(1, substr_count($response->getContent(), '>学割</span>'));
         $this->assertSame(2, substr_count($response->getContent(), '>期間限定</span>'));
+        $this->assertSame(0, substr_count($response->getContent(), '>未使用</span>'));
     }
 
     public function test_preview_escapes_flag_names(): void
@@ -174,6 +174,31 @@ class MenuGachaPageTest extends TestCase
         $this->get(route('menu-gachas.show', ['id' => $menu->id]))
             ->assertSee('&lt;script&gt;', false)
             ->assertDontSee('<script>alert(1)</script>', false);
+    }
+
+    public function test_gacha_displays_menu_flags_and_serializes_item_assignments_for_filtering(): void
+    {
+        $user = User::factory()->create();
+        $menu = $user->menuGachas()->create(['name' => 'ランチ', 'is_published' => true]);
+        $item = $menu->items()->create(['item_name' => 'カレー', 'price' => 800]);
+        $flag = $menu->flags()->create(['name' => '学割']);
+        $item->flags()->attach($flag);
+
+        $this->get(route('menu-gachas.show', ['id' => $menu->id]))
+            ->assertSee('id="gacha-flags"', false)
+            ->assertSee('id="gacha-flag-'.$flag->id.'" value="'.$flag->id.'" checked', false)
+            ->assertSee('学割')
+            ->assertSee('"flagIds":['.$flag->id.']', false);
+    }
+
+    public function test_gacha_has_no_flag_checkboxes_when_menu_has_no_flags(): void
+    {
+        $user = User::factory()->create();
+        $menu = $user->menuGachas()->create(['name' => 'ランチ', 'is_published' => true]);
+
+        $this->get(route('menu-gachas.show', ['id' => $menu->id]))
+            ->assertDontSee('id="gacha-flags"', false)
+            ->assertSee('ガチャを回す');
     }
 
     public function test_item_flags_can_be_selected_and_all_cleared_with_the_edit_form(): void

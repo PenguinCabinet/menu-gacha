@@ -125,8 +125,17 @@
 
                             <h2 class="h5 fw-bold mb-3">食事</h2>
                             @forelse ($menuGacha->items as $item)
-                                <div class="d-flex justify-content-between border-bottom py-2">
-                                    <span>{{ $item->item_name }}</span>
+                                <div class="d-flex justify-content-between gap-3 border-bottom py-2">
+                                    <div>
+                                        <span>{{ $item->item_name }}</span>
+                                        @if ($item->flags->isNotEmpty())
+                                            <div class="d-flex flex-wrap gap-1 mt-1">
+                                                @foreach ($item->flags as $flag)
+                                                    <span class="badge rounded-pill text-bg-secondary">{{ $flag->name }}</span>
+                                                @endforeach
+                                            </div>
+                                        @endif
+                                    </div>
                                     <span>{{ number_format($item->price) }}円</span>
                                 </div>
                             @empty

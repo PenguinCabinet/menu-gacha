@@ -272,6 +272,51 @@
                                     </div>
                                 </div>
                             </form>
+                            <hr class="my-4">
+                            <h2 class="h5 fw-bold mb-2">フラグを管理</h2>
+                            <p class="text-secondary small">学割など、食事に付けるフラグを登録できます。</p>
+
+                            <div class="d-flex flex-column gap-3 mb-4">
+                                @forelse ($menuGacha->flags as $flag)
+                                    <div class="border rounded p-3 bg-white">
+                                        <form method="POST" action="{{ route('menu-gachas.flags.update', ['id' => $menuGacha->getKey(), 'flagId' => $flag->getKey()]) }}" class="row g-2 align-items-end">
+                                            @csrf
+                                            @method('PATCH')
+                                            <div class="col-sm">
+                                                <label for="flag-name-{{ $flag->getKey() }}" class="form-label">フラグ名</label>
+                                                <input type="text" id="flag-name-{{ $flag->getKey() }}" name="flag_name" class="form-control" value="{{ $flag->name }}" maxlength="255" required>
+                                            </div>
+                                            <div class="col-sm-auto d-grid">
+                                                <button type="submit" class="btn btn-outline-primary">保存</button>
+                                            </div>
+                                        </form>
+                                        <form method="POST" action="{{ route('menu-gachas.flags.destroy', ['id' => $menuGacha->getKey(), 'flagId' => $flag->getKey()]) }}" class="mt-2" onsubmit="return confirm('このフラグを削除しますか？');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-outline-danger">削除</button>
+                                        </form>
+                                    </div>
+                                @empty
+                                    <p class="text-secondary mb-0">登録済みのフラグはありません。</p>
+                                @endforelse
+                            </div>
+
+                            <form method="POST" action="{{ route('menu-gachas.flags.store', ['id' => $menuGacha->getKey()]) }}" class="border rounded p-3 bg-white">
+                                @csrf
+                                <h3 class="h6 fw-bold mb-3">フラグを追加</h3>
+                                <div class="row g-2 align-items-end">
+                                    <div class="col-sm">
+                                        <label for="new-flag-name" class="form-label">フラグ名</label>
+                                        <input type="text" id="new-flag-name" name="new_flag_name" class="form-control @error('new_flag_name') is-invalid @enderror" value="{{ old('new_flag_name') }}" maxlength="255" placeholder="例：学割" required>
+                                        @error('new_flag_name')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                    <div class="col-sm-auto d-grid">
+                                        <button type="submit" class="btn btn-success">追加</button>
+                                    </div>
+                                </div>
+                            </form>
                         </section>
                         @endif
                     </div>

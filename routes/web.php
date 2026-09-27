@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\MenuGachaController;
+use App\Http\Controllers\MenuGachaFlagController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -32,6 +33,17 @@ Route::middleware('auth')->group(function () {
         ->whereNumber('id')
         ->whereNumber('itemId')
         ->name('menu-gachas.items.destroy');
+    Route::post('/menu/{id}/flags', [MenuGachaFlagController::class, 'store'])
+        ->whereNumber('id')
+        ->name('menu-gachas.flags.store');
+    Route::patch('/menu/{id}/flags/{flagId}', [MenuGachaFlagController::class, 'update'])
+        ->whereNumber('id')
+        ->whereNumber('flagId')
+        ->name('menu-gachas.flags.update');
+    Route::delete('/menu/{id}/flags/{flagId}', [MenuGachaFlagController::class, 'destroy'])
+        ->whereNumber('id')
+        ->whereNumber('flagId')
+        ->name('menu-gachas.flags.destroy');
 });
 
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');

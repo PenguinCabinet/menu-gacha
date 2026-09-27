@@ -21,8 +21,12 @@ class MenuGachaController extends Controller
 
     public function show(Request $request, int $id): View
     {
+<<<<<<< HEAD
         $menuGacha = MenuGacha::with('items')->findOrFail($id);
         $isOwner = $request->user() !== null && $menuGacha->user_id === $request->user()->getKey();
+=======
+        $menuGacha = $request->user()->menuGachas()->with(['items', 'flags'])->findOrFail($id);
+>>>>>>> ad32dd0 (テーブルスキーマを作成し、メニュー設定画面に項目フラグの作成・編集・消去をできるようにする)
 
         abort_unless($isOwner || $menuGacha->is_published, 404);
 
@@ -33,7 +37,10 @@ class MenuGachaController extends Controller
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
+<<<<<<< HEAD
             'is_published' => ['sometimes', 'required', 'boolean'],
+=======
+>>>>>>> ad32dd0 (テーブルスキーマを作成し、メニュー設定画面に項目フラグの作成・編集・消去をできるようにする)
             'items' => ['sometimes', 'array'],
             'items.*' => ['array:item_name,price'],
         ]);

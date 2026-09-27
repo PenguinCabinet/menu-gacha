@@ -1,0 +1,21 @@
+substitutions:
+  _SERVICE_NAME: menu-gacha
+  _REGION: asia-northeast1
+  _APP_KEY_SECRET: menu_gacha_APP_KEY
+
+steps:
+  - name: gcr.io/google.com/cloudsdktool/google-cloud-cli:stable
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - ${_SERVICE_NAME}
+      - --source=.
+      - --region=${_REGION}
+      - --platform=managed
+      - --allow-unauthenticated
+      - --set-env-vars=APP_ENV=production,APP_DEBUG=false,LOG_CHANNEL=stderr,SESSION_DRIVER=file,CACHE_STORE=file,QUEUE_CONNECTION=sync
+      - --set-secrets=APP_KEY=${_APP_KEY_SECRET}:latest
+
+options:
+  logging: CLOUD_LOGGING_ONLY

@@ -1,3 +1,5 @@
+export const MAX_GACHA_SELECTIONS = 10_000;
+
 export function pull_gacha_by_menu(items, budget, random = Math.random) {
     const selectedItems = [];
     const selectedFreeItemIndexes = new Set();
@@ -12,6 +14,10 @@ export function pull_gacha_by_menu(items, budget, random = Math.random) {
 
         if (affordableItems.length === 0) {
             break;
+        }
+
+        if (selectedItems.length >= MAX_GACHA_SELECTIONS) {
+            throw new RangeError(`Gacha selection exceeded ${MAX_GACHA_SELECTIONS} items.`);
         }
 
         const selection = affordableItems[Math.floor(random() * affordableItems.length)];
@@ -48,7 +54,19 @@ if (typeof document !== 'undefined') {
             return;
         }
 
-        const { items: selectedItems, totalPrice } = pull_gacha_by_menu(gachaItems, budget);
+        let selectedItems;
+        let totalPrice;
+
+        try {
+            ({ items: selectedItems, totalPrice } = pull_gacha_by_menu(gachaItems, budget));
+        } catch (error) {
+            if (!(error instanceof RangeError)) {
+                throw error;
+            }
+
+            gachaResult.textContent = `数が上限の${MAX_GACHA_SELECTIONS.toLocaleString()}件を超えるため、ガチャを中止しました。(フリーズを防止)`;
+            return;
+        }
 
         if (selectedItems.length === 0) {
             gachaResult.textContent = '予算内で選べる食事がありません。';

@@ -29,9 +29,8 @@ class MenuGachaController extends Controller
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'items' => ['sometimes', 'array'],
-            'items.*.item_name' => ['required', 'string', 'max:255'],
-            'items.*.price' => ['required', 'integer', 'min:0'],
+'items' => ['sometimes', 'array'],
+            'items.*' => ['array:item_name,price'],
         ]);
 
         $menuGacha = $request->user()->menuGachas()->findOrFail($id);

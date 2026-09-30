@@ -2,7 +2,7 @@ substitutions:
   _SERVICE_NAME: menu-gacha
   _REGION: asia-northeast1
   _AR_REPOSITORY: cloud-run
-  _LITESTREAM_GCS_BUCKET: replace-with-your-globally-unique-bucket
+  _LITESTREAM_GCS_BUCKET: menu_gacha
   _APP_KEY_SECRET: menu_gacha_APP_KEY
 
 steps:

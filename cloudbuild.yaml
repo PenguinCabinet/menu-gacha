@@ -28,7 +28,7 @@ steps:
       - --platform=managed
       - --allow-unauthenticated
       - --max=1
-      - --set-env-vars=APP_ENV=production,APP_DEBUG=false,LOG_CHANNEL=stderr,SESSION_DRIVER=file,CACHE_STORE=file,QUEUE_CONNECTION=sync,DB_CONNECTION=sqlite,DB_DATABASE=/var/www/html/database/database.sqlite,DB_JOURNAL_MODE=WAL,DB_BUSY_TIMEOUT=5000,LITESTREAM_GCS_BUCKET=${_LITESTREAM_GCS_BUCKET}
+      - --set-env-vars=APP_ENV=production,APP_DEBUG=false,APP_URL=https://menu-gacha.penguincabinet.com/,LOG_CHANNEL=stderr,SESSION_DRIVER=file,CACHE_STORE=file,QUEUE_CONNECTION=sync,DB_CONNECTION=sqlite,DB_DATABASE=/var/www/html/database/database.sqlite,DB_JOURNAL_MODE=WAL,DB_BUSY_TIMEOUT=5000,LITESTREAM_GCS_BUCKET=${_LITESTREAM_GCS_BUCKET}
       - --set-secrets=APP_KEY=${_APP_KEY_SECRET}:latest
 
 images:

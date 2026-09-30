@@ -23,6 +23,33 @@ class MenuGachaFlagTest extends TestCase
         $this->get(route('menu-gachas.show', ['id' => $menu->id]))->assertSee('学割');
     }
 
+    public function test_async_flag_addition_returns_id_without_redirect(): void
+    {
+        $user = User::factory()->create();
+        $menu = $user->menuGachas()->create(['name' => 'ランチ']);
+
+        $response = $this->actingAs($user)->postJson(route('menu-gachas.flags.store', ['id' => $menu->id]), [
+            'new_flag_name' => '学割',
+        ]);
+
+        $flag = $menu->flags()->firstOrFail();
+        $response->assertOk()->assertExactJson(['message' => 'フラグを追加しました。', 'flagId' => $flag->getKey()]);
+        $this->assertDatabaseHas('menu_gacha_flags', ['id' => $flag->getKey(), 'name' => '学割']);
+    }
+
+    public function test_async_flag_addition_reports_validation_errors_without_creating_a_flag(): void
+    {
+        $user = User::factory()->create();
+        $menu = $user->menuGachas()->create(['name' => 'ランチ']);
+        $menu->flags()->create(['name' => '学割']);
+
+        $this->actingAs($user)->postJson(route('menu-gachas.flags.store', ['id' => $menu->id]), [
+            'new_flag_name' => '学割',
+        ])->assertUnprocessable()->assertJsonValidationErrors('new_flag_name');
+
+        $this->assertDatabaseCount('menu_gacha_flags', 1);
+    }
+
     public function test_owner_can_rename_and_delete_a_flag(): void
     {
         $user = User::factory()->create();
@@ -37,6 +64,23 @@ class MenuGachaFlagTest extends TestCase
         $this->delete(route('menu-gachas.flags.destroy', ['id' => $menu->id, 'flagId' => $flag->id]))
             ->assertRedirect(route('menu-gachas.show', ['id' => $menu->id, 'tab' => 'edit']));
         $this->assertDatabaseMissing('menu_gacha_flags', ['id' => $flag->id]);
+    }
+
+    public function test_async_flag_deletion_returns_json_and_removes_item_assignments(): void
+    {
+        $user = User::factory()->create();
+        $menu = $user->menuGachas()->create(['name' => 'ランチ']);
+        $item = $menu->items()->create(['item_name' => 'カレー', 'price' => 800]);
+        $flag = $menu->flags()->create(['name' => '学割']);
+        $item->flags()->attach($flag);
+
+        $this->actingAs($user)->deleteJson(route('menu-gachas.flags.destroy', [
+            'id' => $menu->id,
+            'flagId' => $flag->getKey(),
+        ]))->assertOk()->assertExactJson(['message' => 'フラグを削除しました。']);
+
+        $this->assertDatabaseMissing('menu_gacha_flags', ['id' => $flag->getKey()]);
+        $this->assertDatabaseCount('menu_gacha_flag_menu_gacha_item', 0);
     }
 
     public function test_names_must_be_present_and_unique_within_each_menu(): void

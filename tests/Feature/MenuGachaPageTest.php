@@ -52,6 +52,30 @@ class MenuGachaPageTest extends TestCase
         ]);
     }
 
+    public function test_async_save_returns_json_and_updates_menu_without_redirect(): void
+    {
+        $user = User::factory()->create();
+        $menuGacha = $user->menuGachas()->create(['name' => '週末ごはん']);
+
+        $this->actingAs($user)->patchJson(route('menu-gachas.update', ['id' => $menuGacha->getKey()]), [
+            'name' => '平日ごはん',
+        ])->assertOk()->assertExactJson(['message' => 'メニューガチャを更新しました。']);
+
+        $this->assertDatabaseHas('menu_gachas', ['id' => $menuGacha->getKey(), 'name' => '平日ごはん']);
+    }
+
+    public function test_async_save_returns_validation_errors_without_changing_menu(): void
+    {
+        $user = User::factory()->create();
+        $menuGacha = $user->menuGachas()->create(['name' => '週末ごはん']);
+
+        $this->actingAs($user)->patchJson(route('menu-gachas.update', ['id' => $menuGacha->getKey()]), [
+            'name' => '',
+        ])->assertUnprocessable()->assertJsonValidationErrors('name');
+
+        $this->assertDatabaseHas('menu_gachas', ['id' => $menuGacha->getKey(), 'name' => '週末ごはん']);
+    }
+
     public function test_meal_can_be_added_to_a_menu_gacha(): void
     {
         $user = User::factory()->create();
@@ -72,6 +96,37 @@ class MenuGachaPageTest extends TestCase
             'item_name' => 'カレー',
             'price' => 850,
         ]);
+    }
+
+    public function test_async_meal_addition_returns_new_item_id_without_redirect(): void
+    {
+        $user = User::factory()->create();
+        $menuGacha = $user->menuGachas()->create(['name' => '週末ごはん']);
+        $flag = $menuGacha->flags()->create(['name' => '学割']);
+
+        $response = $this->actingAs($user)->postJson(route('menu-gachas.items.store', ['id' => $menuGacha->getKey()]), [
+            'new_item_name' => 'カレー',
+            'new_price' => 850,
+            'new_flag_ids' => [$flag->getKey()],
+        ]);
+
+        $item = $menuGacha->items()->firstOrFail();
+        $response->assertOk()->assertExactJson(['message' => '食事を追加しました。', 'itemId' => $item->getKey()]);
+        $this->assertDatabaseHas('menu_gacha_items', ['id' => $item->getKey(), 'item_name' => 'カレー', 'price' => 850]);
+        $this->assertDatabaseHas('menu_gacha_flag_menu_gacha_item', ['menu_gacha_item_id' => $item->getKey(), 'menu_gacha_flag_id' => $flag->getKey()]);
+    }
+
+    public function test_async_meal_addition_reports_validation_errors_without_creating_an_item(): void
+    {
+        $user = User::factory()->create();
+        $menuGacha = $user->menuGachas()->create(['name' => '週末ごはん']);
+
+        $this->actingAs($user)->postJson(route('menu-gachas.items.store', ['id' => $menuGacha->getKey()]), [
+            'new_item_name' => 'カレー',
+            'new_price' => -1,
+        ])->assertUnprocessable()->assertJsonValidationErrors('new_price');
+
+        $this->assertDatabaseCount('menu_gacha_items', 0);
     }
 
     public function test_meal_name_and_price_can_be_updated_with_the_page_save_action(): void
@@ -181,6 +236,20 @@ class MenuGachaPageTest extends TestCase
             'id' => $menuGacha->getKey(),
             'tab' => 'edit',
         ]));
+        $this->assertDatabaseMissing('menu_gacha_items', ['id' => $item->getKey()]);
+    }
+
+    public function test_async_meal_deletion_returns_json_without_redirect(): void
+    {
+        $user = User::factory()->create();
+        $menuGacha = $user->menuGachas()->create(['name' => '週末ごはん']);
+        $item = $menuGacha->items()->create(['item_name' => 'カレー', 'price' => 850]);
+
+        $this->actingAs($user)->deleteJson(route('menu-gachas.items.destroy', [
+            'id' => $menuGacha->getKey(),
+            'itemId' => $item->getKey(),
+        ]))->assertOk()->assertExactJson(['message' => '食事を削除しました。']);
+
         $this->assertDatabaseMissing('menu_gacha_items', ['id' => $item->getKey()]);
     }
 

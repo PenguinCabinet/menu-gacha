@@ -176,6 +176,7 @@
                             tabindex="0"
                         >
                             <h1 class="h4 fw-bold mb-4">メニューガチャを編集</h1>
+                            <div id="edit-save-status" class="position-fixed end-0 m-3 m-md-4 shadow-sm" style="bottom: 3rem; z-index: 1030;" role="status" aria-live="polite"></div>
 
                             <div class="mb-3">
                                     <label for="name" class="form-label">メニューガチャ名</label>
@@ -212,9 +213,9 @@
                                 <hr class="my-4">
                                 <h2 class="h5 fw-bold mb-3">食事を編集</h2>
 
-                            <div class="d-flex flex-column gap-3 mb-4">
+                            <div id="edit-items" class="d-flex flex-column gap-3 mb-4">
                                 @forelse ($menuGacha->items as $item)
-                                    <div class="row g-2 align-items-end border rounded p-3 bg-white">
+                                    <div id="edit-item-{{ $item->getKey() }}" class="row g-2 align-items-end border rounded p-3 bg-white">
                                         <div class="col-md-7">
                                             <label for="item-name-{{ $item->getKey() }}" class="form-label">項目名</label>
                                             <input
@@ -246,6 +247,7 @@
                                             <form
                                                 method="POST"
                                                 action="{{ route('menu-gachas.items.destroy', ['id' => $menuGacha->getKey(), 'itemId' => $item->getKey()]) }}"
+                                                class="delete-item-form"
                                                 onsubmit="return confirm('この食事を削除しますか？');"
                                             >
                                                 @csrf
@@ -285,7 +287,7 @@
                                 @method('PATCH')
                             </form>
 
-                            <form method="POST" action="{{ route('menu-gachas.items.store', ['id' => $menuGacha->getKey()]) }}" class="border rounded p-3 bg-white mt-4">
+                            <form id="add-item-form" method="POST" action="{{ route('menu-gachas.items.store', ['id' => $menuGacha->getKey()]) }}" class="border rounded p-3 bg-white mt-4">
                                 @csrf
                                 <h3 class="h6 fw-bold mb-3">食事を追加</h3>
                                 <div class="row g-2 align-items-end">
@@ -342,9 +344,9 @@
                             <h2 class="h5 fw-bold mb-2">フラグを管理</h2>
                             <p class="text-secondary small">学割など、食事に付けるフラグを登録できます。</p>
 
-                            <div class="d-flex flex-column gap-3 mb-4">
+                            <div id="edit-flags" class="d-flex flex-column gap-3 mb-4">
                                 @forelse ($menuGacha->flags as $flag)
-                                    <div class="border rounded p-3 bg-white">
+                                    <div id="edit-flag-{{ $flag->getKey() }}" class="border rounded p-3 bg-white">
                                         <div class="row g-2 align-items-end">
                                             <div class="col-sm">
                                                 <label for="flag-name-{{ $flag->getKey() }}" class="form-label">フラグ名</label>
@@ -354,7 +356,7 @@
                                                 @enderror
                                             </div>
                                         </div>
-                                        <form method="POST" action="{{ route('menu-gachas.flags.destroy', ['id' => $menuGacha->getKey(), 'flagId' => $flag->getKey()]) }}" class="mt-2" onsubmit="return confirm('このフラグを削除しますか？');">
+                                        <form method="POST" action="{{ route('menu-gachas.flags.destroy', ['id' => $menuGacha->getKey(), 'flagId' => $flag->getKey()]) }}" class="mt-2 delete-flag-form" onsubmit="return confirm('このフラグを削除しますか？');">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-outline-danger">削除</button>
@@ -365,7 +367,7 @@
                                 @endforelse
                             </div>
 
-                            <form method="POST" action="{{ route('menu-gachas.flags.store', ['id' => $menuGacha->getKey()]) }}" class="border rounded p-3 bg-white">
+                            <form id="add-flag-form" method="POST" action="{{ route('menu-gachas.flags.store', ['id' => $menuGacha->getKey()]) }}" class="border rounded p-3 bg-white">
                                 @csrf
                                 <h3 class="h6 fw-bold mb-3">フラグを追加</h3>
                                 <div class="row g-2 align-items-end">

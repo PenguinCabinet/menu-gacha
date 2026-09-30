@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\MenuGacha;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -30,7 +31,7 @@ class MenuGachaController extends Controller
         return view('menu-gachas.show', ['menuGacha' => $menuGacha, 'isOwner' => $isOwner]);
     }
 
-    public function update(Request $request, int $id): RedirectResponse
+    public function update(Request $request, int $id): RedirectResponse|JsonResponse
     {
         $menuGacha = $request->user()->menuGachas()->findOrFail($id);
         $rules = [
@@ -70,12 +71,16 @@ class MenuGachaController extends Controller
             }
         });
 
+        if ($request->expectsJson()) {
+            return response()->json(['message' => 'メニューガチャを更新しました。']);
+        }
+
         return redirect()
             ->route('menu-gachas.show', ['id' => $menuGacha->getKey(), 'tab' => 'edit'])
             ->with('message', 'メニューガチャを更新しました。');
     }
 
-    public function storeItem(Request $request, int $id): RedirectResponse
+    public function storeItem(Request $request, int $id): RedirectResponse|JsonResponse
     {
         $menuGacha = $request->user()->menuGachas()->findOrFail($id);
         $validated = $request->validate([
@@ -85,23 +90,33 @@ class MenuGachaController extends Controller
             'new_flag_ids.*' => ['integer', 'distinct', Rule::exists('menu_gacha_flags', 'id')->where('menu_gacha_id', $menuGacha->getKey())],
         ]);
 
-        DB::transaction(function () use ($menuGacha, $validated): void {
+        $itemId = DB::transaction(function () use ($menuGacha, $validated): int {
             $item = $menuGacha->items()->create([
                 'item_name' => $validated['new_item_name'],
                 'price' => $validated['new_price'],
             ]);
             $item->flags()->sync($validated['new_flag_ids'] ?? []);
+
+            return $item->getKey();
         });
+
+        if ($request->expectsJson()) {
+            return response()->json(['message' => '食事を追加しました。', 'itemId' => $itemId]);
+        }
 
         return redirect()
             ->route('menu-gachas.show', ['id' => $menuGacha->getKey(), 'tab' => 'edit'])
             ->with('message', '食事を追加しました。');
     }
 
-    public function destroyItem(Request $request, int $id, int $itemId): RedirectResponse
+    public function destroyItem(Request $request, int $id, int $itemId): RedirectResponse|JsonResponse
     {
         $menuGacha = $request->user()->menuGachas()->findOrFail($id);
         $menuGacha->items()->findOrFail($itemId)->delete();
+
+        if ($request->expectsJson()) {
+            return response()->json(['message' => '食事を削除しました。']);
+        }
 
         return redirect()
             ->route('menu-gachas.show', ['id' => $menuGacha->getKey(), 'tab' => 'edit'])

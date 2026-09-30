@@ -21,7 +21,7 @@ class MenuGachaPageTest extends TestCase
         $response->assertOk()
             ->assertSee('ガチャ')
             ->assertSee('ガチャを回す')
-            ->assertSee('プレビュー')
+            ->assertSee('メニュー')
             ->assertSee('編集')
             ->assertSee('週末ごはん')
             ->assertSee('作成ユーザー：')

@@ -68,7 +68,7 @@
                                 aria-controls="preview-panel"
                                 aria-selected="false"
                                 tabindex="-1"
-                            >プレビュー</button>
+                            >メニュー</button>
                         </li>
                         @if ($isOwner)
                             <li class="nav-item" role="presentation">

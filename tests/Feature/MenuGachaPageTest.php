@@ -24,9 +24,12 @@ class MenuGachaPageTest extends TestCase
             ->assertSee('プレビュー')
             ->assertSee('編集')
             ->assertSee('週末ごはん')
-            ->assertSee('作成者：')
+            ->assertSee('作成ユーザー：')
             ->assertSee(route('users.show', ['name' => $user->name]), false)
-            ->assertSee($user->name);
+            ->assertSee($user->name)
+            ->assertSee('class="nav-link active fw-semibold"', false)
+            ->assertSee('id="gacha-panel"', false)
+            ->assertSee('class="tab-pane fade show active"', false);
     }
 
     public function test_menu_gacha_name_can_be_updated_from_the_edit_tab(): void

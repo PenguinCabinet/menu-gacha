@@ -13,9 +13,9 @@ Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
-Route::get('/og/site.svg', [OgImageController::class, 'site'])->name('og.site');
-Route::get('/og/menu/{id}.svg', [OgImageController::class, 'menu'])->whereNumber('id')->name('og.menu');
-Route::get('/og/user/{name}.svg', [OgImageController::class, 'user'])->name('og.user');
+Route::get('/og/site.png', [OgImageController::class, 'site'])->name('og.site');
+Route::get('/og/menu/{id}.png', [OgImageController::class, 'menu'])->whereNumber('id')->name('og.menu');
+Route::get('/og/user/{name}.png', [OgImageController::class, 'user'])->name('og.user');
 
 Route::get('/menu/{id}', [MenuGachaController::class, 'show'])
     ->whereNumber('id')

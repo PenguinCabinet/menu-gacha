@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\MenuGacha;
 use App\Models\User;
+use App\Support\OgImageRenderer;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
@@ -32,12 +33,10 @@ class OgImageController extends Controller
 
     private function image(string $title, string $description, string $eyebrow): Response
     {
-        return response()->view('og.image', [
-            'title' => $title,
-            'description' => $description,
-            'eyebrow' => $eyebrow,
-        ], 200, [
-            'Content-Type' => 'image/svg+xml; charset=UTF-8',
+        $png = app(OgImageRenderer::class)->render($title, $description, $eyebrow);
+
+        return response($png, 200, [
+            'Content-Type' => 'image/png',
             'Cache-Control' => 'private, max-age=3600',
         ]);
     }

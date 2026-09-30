@@ -12,7 +12,7 @@ class OgImageController extends Controller
 {
     public function site(): Response
     {
-        return $this->image('メニューガチャ', '今日の食事を、楽しく決めよう。', 'メニュー選びをもっと楽しく');
+        return $this->image('メニューガチャ', 'ガチャを回してメニューを決めよう', 'メニュー選びをもっと楽しく');
     }
 
     public function menu(Request $request, int $id): Response
@@ -21,14 +21,14 @@ class OgImageController extends Controller
         $isOwner = $request->user()?->getKey() === $menuGacha->user_id;
         abort_unless($isOwner || $menuGacha->is_published, 404);
 
-        return $this->image($menuGacha->name, '今日のメニューをガチャで決めよう。', 'MENU GACHA · '.$menuGacha->user->name);
+        return $this->image($menuGacha->name.' by '.$menuGacha->user->name, '今日のメニューをガチャで決めよう', 'MENU GACHA');
     }
 
     public function user(string $name): Response
     {
         $user = User::where('name', $name)->firstOrFail();
 
-        return $this->image($user->name, '公開中のメニューガチャをチェック。', 'CREATED BY');
+        return $this->image($user->name, $user->name.'さんの公開中のメニューガチャをチェック', 'CREATED BY');
     }
 
     private function image(string $title, string $description, string $eyebrow): Response

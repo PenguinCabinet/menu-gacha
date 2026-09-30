@@ -38,7 +38,7 @@ class OgImageRenderer
             $this->drawText($image, 30, 154, 390, $this->truncate($description, 44), [87, 83, 78]);
 
             $this->drawRoundedRectangle($image, 154, 448, 404, 506, 29, $this->color($image, 234, 88, 12));
-            $this->drawText($image, 23, 198, 486, 'メニューガチャ', [255, 255, 255]);
+            $this->drawText($image, 23, 174, 486, 'メニューガチャ', [255, 255, 255]);
             $this->drawText($image, 18, 920, 510, 'MENU GACHA', [168, 162, 158]);
 
             ob_start();

@@ -16,7 +16,7 @@ class LoginController extends Controller
     public function login(Request $request)
     {
         $credentials = $request->validate([
-            'email' => ['required', 'string', 'email'],
+            'name' => ['required', 'string'],
             'password' => ['required', 'string'],
         ]);
 
@@ -27,7 +27,7 @@ class LoginController extends Controller
         }
 
         return back()->withErrors([
-            'email' => 'メールアドレスまたはパスワードが正しくありません。',
-        ])->onlyInput('email');
+            'name' => 'ユーザー名またはパスワードが正しくありません。',
+        ])->onlyInput('name');
     }
 }

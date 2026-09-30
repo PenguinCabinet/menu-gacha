@@ -47,7 +47,28 @@ if (typeof document !== 'undefined') {
         const status = document.getElementById('edit-save-status');
         const saveButton = document.querySelector('[form="menu-gacha-edit-form"][type="submit"]');
 
-        async function submitEditForm(form, button, onSuccess = () => {}) {
+        function syncFlagFieldset(currentContainer, updatedContainer) {
+            const currentFieldset = currentContainer.querySelector('fieldset');
+            const updatedFieldset = updatedContainer.querySelector('fieldset');
+
+            if (!updatedFieldset) {
+                currentFieldset?.remove();
+                return;
+            }
+
+            const selectedFlags = new Set(Array.from(currentFieldset?.querySelectorAll('input:checked') ?? [], (input) => input.value));
+            for (const input of updatedFieldset.querySelectorAll('input')) {
+                input.checked = selectedFlags.has(input.value);
+            }
+
+            if (currentFieldset) {
+                currentFieldset.replaceWith(updatedFieldset);
+            } else {
+                currentContainer.append(updatedFieldset);
+            }
+        }
+
+        async function submitMenuForm(form, button, onSuccess = () => {}) {
             button.disabled = true;
             status.className = 'position-fixed end-0 m-3 m-md-4 shadow-sm';
             status.replaceChildren();
@@ -80,10 +101,11 @@ if (typeof document !== 'undefined') {
 
                 const previousFlags = document.getElementById('gacha-flags');
                 const selectedFlags = new Set(Array.from(previousFlags?.querySelectorAll('input:checked') ?? [], (input) => input.value));
+                const previousFlagIds = new Set(Array.from(previousFlags?.querySelectorAll('input') ?? [], (input) => input.value));
                 const updatedFlags = updatedPage.getElementById('gacha-flags');
                 if (updatedFlags) {
                     for (const input of updatedFlags.querySelectorAll('input')) {
-                        input.checked = selectedFlags.has(input.value);
+                        input.checked = !previousFlagIds.has(input.value) || selectedFlags.has(input.value);
                     }
                     if (previousFlags) {
                         previousFlags.replaceWith(updatedFlags);
@@ -94,12 +116,10 @@ if (typeof document !== 'undefined') {
                     previousFlags?.remove();
                 }
 
-                for (const label of document.querySelectorAll('#edit-panel label[for^="item-"]')) {
-                    const updatedLabel = updatedPage.getElementById('edit-panel').querySelector(`label[for="${label.htmlFor}"]`);
-                    if (updatedLabel) {
-                        label.textContent = updatedLabel.textContent;
-                    }
+                for (const row of document.querySelectorAll('#edit-items > [id^="edit-item-"]')) {
+                    syncFlagFieldset(row, updatedPage.getElementById(row.id));
                 }
+                syncFlagFieldset(document.querySelector('#add-item-form .row'), updatedPage.querySelector('#add-item-form .row'));
 
                 gachaItems = JSON.parse(updatedPage.getElementById('gacha-items').textContent);
                 status.classList.add('alert', 'alert-success');
@@ -114,7 +134,7 @@ if (typeof document !== 'undefined') {
 
         editForm.addEventListener('submit', (event) => {
             event.preventDefault();
-            submitEditForm(editForm, saveButton);
+            submitMenuForm(editForm, saveButton);
         });
 
         const itemList = document.getElementById('edit-items');
@@ -122,7 +142,7 @@ if (typeof document !== 'undefined') {
 
         addItemForm.addEventListener('submit', (event) => {
             event.preventDefault();
-            submitEditForm(addItemForm, addItemForm.querySelector('[type="submit"]'), (result, updatedPage) => {
+            submitMenuForm(addItemForm, addItemForm.querySelector('[type="submit"]'), (result, updatedPage) => {
                 itemList.querySelector('p')?.remove();
                 itemList.append(updatedPage.getElementById(`edit-item-${result.itemId}`));
                 addItemForm.reset();
@@ -137,10 +157,38 @@ if (typeof document !== 'undefined') {
 
             event.preventDefault();
             const itemRow = form.closest('[id^="edit-item-"]');
-            submitEditForm(form, form.querySelector('[type="submit"]'), (_result, updatedPage) => {
+            submitMenuForm(form, form.querySelector('[type="submit"]'), (_result, updatedPage) => {
                 itemRow.remove();
                 if (!itemList.children.length) {
                     itemList.append(updatedPage.querySelector('#edit-items p'));
+                }
+            });
+        });
+
+        const flagList = document.getElementById('edit-flags');
+        const addFlagForm = document.getElementById('add-flag-form');
+
+        addFlagForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+            submitMenuForm(addFlagForm, addFlagForm.querySelector('[type="submit"]'), (result, updatedPage) => {
+                flagList.querySelector('p')?.remove();
+                flagList.append(updatedPage.getElementById(`edit-flag-${result.flagId}`));
+                addFlagForm.reset();
+            });
+        });
+
+        flagList.addEventListener('submit', (event) => {
+            const form = event.target.closest('.delete-flag-form');
+            if (!form || event.defaultPrevented) {
+                return;
+            }
+
+            event.preventDefault();
+            const flagRow = form.closest('[id^="edit-flag-"]');
+            submitMenuForm(form, form.querySelector('[type="submit"]'), (_result, updatedPage) => {
+                flagRow.remove();
+                if (!flagList.children.length) {
+                    flagList.append(updatedPage.querySelector('#edit-flags p'));
                 }
             });
         });

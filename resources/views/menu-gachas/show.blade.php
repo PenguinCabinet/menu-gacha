@@ -344,9 +344,9 @@
                             <h2 class="h5 fw-bold mb-2">フラグを管理</h2>
                             <p class="text-secondary small">学割など、食事に付けるフラグを登録できます。</p>
 
-                            <div class="d-flex flex-column gap-3 mb-4">
+                            <div id="edit-flags" class="d-flex flex-column gap-3 mb-4">
                                 @forelse ($menuGacha->flags as $flag)
-                                    <div class="border rounded p-3 bg-white">
+                                    <div id="edit-flag-{{ $flag->getKey() }}" class="border rounded p-3 bg-white">
                                         <div class="row g-2 align-items-end">
                                             <div class="col-sm">
                                                 <label for="flag-name-{{ $flag->getKey() }}" class="form-label">フラグ名</label>
@@ -356,7 +356,7 @@
                                                 @enderror
                                             </div>
                                         </div>
-                                        <form method="POST" action="{{ route('menu-gachas.flags.destroy', ['id' => $menuGacha->getKey(), 'flagId' => $flag->getKey()]) }}" class="mt-2" onsubmit="return confirm('このフラグを削除しますか？');">
+                                        <form method="POST" action="{{ route('menu-gachas.flags.destroy', ['id' => $menuGacha->getKey(), 'flagId' => $flag->getKey()]) }}" class="mt-2 delete-flag-form" onsubmit="return confirm('このフラグを削除しますか？');">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-outline-danger">削除</button>
@@ -367,7 +367,7 @@
                                 @endforelse
                             </div>
 
-                            <form method="POST" action="{{ route('menu-gachas.flags.store', ['id' => $menuGacha->getKey()]) }}" class="border rounded p-3 bg-white">
+                            <form id="add-flag-form" method="POST" action="{{ route('menu-gachas.flags.store', ['id' => $menuGacha->getKey()]) }}" class="border rounded p-3 bg-white">
                                 @csrf
                                 <h3 class="h6 fw-bold mb-3">フラグを追加</h3>
                                 <div class="row g-2 align-items-end">

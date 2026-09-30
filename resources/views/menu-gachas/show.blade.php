@@ -32,38 +32,43 @@
                 <div class="card-header bg-white border-bottom-0 px-3 px-md-4 pt-3">
                     <p class="small fw-semibold text-uppercase text-secondary mb-2">Menu Gacha</p>
                     <h1 class="h2 fw-bold mb-3">{{ $menuGacha->name }}</h1>
-                    <p class="text-secondary mb-4">
+                    <p class="text-secondary">
                         作成日：
                         <time datetime="{{ $menuGacha->created_at?->toIso8601String() }}">
                             {{ $menuGacha->created_at?->format('Y年n月j日') }}
                         </time>
                     </p>
+                    <p class="text-secondary mb-4">
+                        作成ユーザー：
+                        <a href="{{ route('users.show', ['name' => $menuGacha->user->name]) }}">{{ $menuGacha->user->name }}</a>
+                    </p>
 
                     <ul class="nav nav-tabs" id="menu-gacha-tabs" role="tablist" aria-label="メニューガチャ">
                         <li class="nav-item" role="presentation">
                             <button
-                                class="nav-link fw-semibold"
+                                class="nav-link {{ $isEditing ? '' : 'active' }} fw-semibold"
                                 id="gacha-tab"
                                 data-bs-toggle="tab"
                                 data-bs-target="#gacha-panel"
                                 type="button"
                                 role="tab"
                                 aria-controls="gacha-panel"
-                                aria-selected="false"
-                                tabindex="-1"
+                                aria-selected="{{ $isEditing ? 'false' : 'true' }}"
+                                @if ($isEditing) tabindex="-1" @endif
                             >ガチャ</button>
                         </li>
                         <li class="nav-item" role="presentation">
                             <button
-                                class="nav-link {{ $isEditing ? '' : 'active' }} fw-semibold"
+                                class="nav-link fw-semibold"
                                 id="preview-tab"
                                 data-bs-toggle="tab"
                                 data-bs-target="#preview-panel"
                                 type="button"
                                 role="tab"
                                 aria-controls="preview-panel"
-                                aria-selected="{{ $isEditing ? 'false' : 'true' }}"
-                            >プレビュー</button>
+                                aria-selected="false"
+                                tabindex="-1"
+                            >メニュー</button>
                         </li>
                         @if ($isOwner)
                             <li class="nav-item" role="presentation">
@@ -85,7 +90,7 @@
                 <div class="card-body p-4 p-md-5">
                     <div class="tab-content">
                         <section
-                            class="tab-pane fade"
+                            class="tab-pane fade {{ $isEditing ? '' : 'show active' }}"
                             id="gacha-panel"
                             role="tabpanel"
                             aria-labelledby="gacha-tab"
@@ -128,7 +133,7 @@
                             <p id="gacha-total" class="fw-bold mt-3 mb-0" aria-live="polite"></p>
                         </section>
                         <section
-                            class="tab-pane fade {{ $isEditing ? '' : 'show active' }}"
+                            class="tab-pane fade"
                             id="preview-panel"
                             role="tabpanel"
                             aria-labelledby="preview-tab"

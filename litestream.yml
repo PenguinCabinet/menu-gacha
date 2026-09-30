@@ -1,0 +1,4 @@
+dbs:
+  - path: /var/www/html/database/database.sqlite
+    replica:
+      url: gs://${LITESTREAM_GCS_BUCKET}/menu-gacha/database

@@ -4,6 +4,12 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>ログイン</title>
+        @include('components.ogp', [
+            'title' => 'ログイン | メニューガチャ',
+            'description' => 'メニューガチャにログインして、あなたのメニューを管理しましょう。',
+            'url' => route('login'),
+            'image' => route('og.site'),
+        ])
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     </head>
     <body class="bg-light">

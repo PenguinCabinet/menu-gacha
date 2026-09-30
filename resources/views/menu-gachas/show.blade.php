@@ -4,6 +4,13 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>{{ $menuGacha->name }} | メニューガチャ</title>
+        @include('components.ogp', [
+            'title' => $menuGacha->name.' | メニューガチャ',
+            'description' => '「'.$menuGacha->name.'」から今日のメニューをガチャで決めよう。',
+            'url' => route('menu-gachas.show', ['id' => $menuGacha->getKey()]),
+            'image' => route('og.menu', ['id' => $menuGacha->getKey()]),
+            'type' => 'article',
+        ])
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     </head>
     <body class="bg-light">

@@ -4,7 +4,13 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <title>{{ config('app.name', 'Laravel') }}</title>
+        <title>メニューガチャ | 今日の食事を楽しく決めよう</title>
+        @include('components.ogp', [
+            'title' => 'メニューガチャ',
+            'description' => '今日の食事をガチャで楽しく決めよう。',
+            'url' => route('home'),
+            'image' => route('og.site'),
+        ])
 
         @fonts
 

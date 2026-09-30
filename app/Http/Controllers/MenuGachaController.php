@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\MenuGacha;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -30,7 +31,7 @@ class MenuGachaController extends Controller
         return view('menu-gachas.show', ['menuGacha' => $menuGacha, 'isOwner' => $isOwner]);
     }
 
-    public function update(Request $request, int $id): RedirectResponse
+    public function update(Request $request, int $id): RedirectResponse|JsonResponse
     {
         $menuGacha = $request->user()->menuGachas()->findOrFail($id);
         $rules = [
@@ -69,6 +70,10 @@ class MenuGachaController extends Controller
                 $menuGacha->flags()->findOrFail($flagId)->update(['name' => $flagData['name']]);
             }
         });
+
+        if ($request->expectsJson()) {
+            return response()->json(['message' => 'メニューガチャを更新しました。']);
+        }
 
         return redirect()
             ->route('menu-gachas.show', ['id' => $menuGacha->getKey(), 'tab' => 'edit'])

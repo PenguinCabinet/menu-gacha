@@ -176,6 +176,7 @@
                             tabindex="0"
                         >
                             <h1 class="h4 fw-bold mb-4">メニューガチャを編集</h1>
+                            <div id="edit-save-status" class="position-fixed end-0 m-3 m-md-4 shadow-sm" style="bottom: 3rem; z-index: 1030;" role="status" aria-live="polite"></div>
 
                             <div class="mb-3">
                                     <label for="name" class="form-label">メニューガチャ名</label>

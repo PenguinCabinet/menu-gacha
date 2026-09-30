@@ -52,6 +52,30 @@ class MenuGachaPageTest extends TestCase
         ]);
     }
 
+    public function test_async_save_returns_json_and_updates_menu_without_redirect(): void
+    {
+        $user = User::factory()->create();
+        $menuGacha = $user->menuGachas()->create(['name' => '週末ごはん']);
+
+        $this->actingAs($user)->patchJson(route('menu-gachas.update', ['id' => $menuGacha->getKey()]), [
+            'name' => '平日ごはん',
+        ])->assertOk()->assertExactJson(['message' => 'メニューガチャを更新しました。']);
+
+        $this->assertDatabaseHas('menu_gachas', ['id' => $menuGacha->getKey(), 'name' => '平日ごはん']);
+    }
+
+    public function test_async_save_returns_validation_errors_without_changing_menu(): void
+    {
+        $user = User::factory()->create();
+        $menuGacha = $user->menuGachas()->create(['name' => '週末ごはん']);
+
+        $this->actingAs($user)->patchJson(route('menu-gachas.update', ['id' => $menuGacha->getKey()]), [
+            'name' => '',
+        ])->assertUnprocessable()->assertJsonValidationErrors('name');
+
+        $this->assertDatabaseHas('menu_gachas', ['id' => $menuGacha->getKey(), 'name' => '週末ごはん']);
+    }
+
     public function test_meal_can_be_added_to_a_menu_gacha(): void
     {
         $user = User::factory()->create();

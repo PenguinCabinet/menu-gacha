@@ -213,9 +213,9 @@
                                 <hr class="my-4">
                                 <h2 class="h5 fw-bold mb-3">食事を編集</h2>
 
-                            <div class="d-flex flex-column gap-3 mb-4">
+                            <div id="edit-items" class="d-flex flex-column gap-3 mb-4">
                                 @forelse ($menuGacha->items as $item)
-                                    <div class="row g-2 align-items-end border rounded p-3 bg-white">
+                                    <div id="edit-item-{{ $item->getKey() }}" class="row g-2 align-items-end border rounded p-3 bg-white">
                                         <div class="col-md-7">
                                             <label for="item-name-{{ $item->getKey() }}" class="form-label">項目名</label>
                                             <input
@@ -247,6 +247,7 @@
                                             <form
                                                 method="POST"
                                                 action="{{ route('menu-gachas.items.destroy', ['id' => $menuGacha->getKey(), 'itemId' => $item->getKey()]) }}"
+                                                class="delete-item-form"
                                                 onsubmit="return confirm('この食事を削除しますか？');"
                                             >
                                                 @csrf
@@ -286,7 +287,7 @@
                                 @method('PATCH')
                             </form>
 
-                            <form method="POST" action="{{ route('menu-gachas.items.store', ['id' => $menuGacha->getKey()]) }}" class="border rounded p-3 bg-white mt-4">
+                            <form id="add-item-form" method="POST" action="{{ route('menu-gachas.items.store', ['id' => $menuGacha->getKey()]) }}" class="border rounded p-3 bg-white mt-4">
                                 @csrf
                                 <h3 class="h6 fw-bold mb-3">食事を追加</h3>
                                 <div class="row g-2 align-items-end">

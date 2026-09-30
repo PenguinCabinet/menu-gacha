@@ -47,16 +47,15 @@ if (typeof document !== 'undefined') {
         const status = document.getElementById('edit-save-status');
         const saveButton = document.querySelector('[form="menu-gacha-edit-form"][type="submit"]');
 
-        editForm.addEventListener('submit', async (event) => {
-            event.preventDefault();
-            saveButton.disabled = true;
+        async function submitEditForm(form, button, onSuccess = () => {}) {
+            button.disabled = true;
             status.className = 'position-fixed end-0 m-3 m-md-4 shadow-sm';
             status.replaceChildren();
 
             try {
-                const response = await fetch(editForm.action, {
+                const response = await fetch(form.action, {
                     method: 'POST',
-                    body: new FormData(editForm),
+                    body: new FormData(form),
                     headers: { Accept: 'application/json' },
                 });
                 const result = await response.json();
@@ -74,6 +73,7 @@ if (typeof document !== 'undefined') {
                 }
 
                 const updatedPage = new DOMParser().parseFromString(await pageResponse.text(), 'text/html');
+                onSuccess(result, updatedPage);
                 document.querySelector('.card-header h1').textContent = updatedPage.querySelector('.card-header h1').textContent;
                 document.title = updatedPage.title;
                 document.getElementById('preview-panel').innerHTML = updatedPage.getElementById('preview-panel').innerHTML;
@@ -108,8 +108,41 @@ if (typeof document !== 'undefined') {
                 status.classList.add('alert', 'alert-danger');
                 status.textContent = '通信に失敗しました。保存結果を確認してください。';
             } finally {
-                saveButton.disabled = false;
+                button.disabled = false;
             }
+        }
+
+        editForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+            submitEditForm(editForm, saveButton);
+        });
+
+        const itemList = document.getElementById('edit-items');
+        const addItemForm = document.getElementById('add-item-form');
+
+        addItemForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+            submitEditForm(addItemForm, addItemForm.querySelector('[type="submit"]'), (result, updatedPage) => {
+                itemList.querySelector('p')?.remove();
+                itemList.append(updatedPage.getElementById(`edit-item-${result.itemId}`));
+                addItemForm.reset();
+            });
+        });
+
+        itemList.addEventListener('submit', (event) => {
+            const form = event.target.closest('.delete-item-form');
+            if (!form || event.defaultPrevented) {
+                return;
+            }
+
+            event.preventDefault();
+            const itemRow = form.closest('[id^="edit-item-"]');
+            submitEditForm(form, form.querySelector('[type="submit"]'), (_result, updatedPage) => {
+                itemRow.remove();
+                if (!itemList.children.length) {
+                    itemList.append(updatedPage.querySelector('#edit-items p'));
+                }
+            });
         });
     }
 

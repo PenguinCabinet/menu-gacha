@@ -11,8 +11,9 @@ FROM litestream/litestream:0.5.15 AS litestream
 FROM php:8.5-apache
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends libonig-dev libsqlite3-dev libxml2-dev libzip-dev unzip \
-    && docker-php-ext-install mbstring pdo_sqlite xml zip \
+    && apt-get install -y --no-install-recommends fonts-noto-cjk libfreetype6-dev libonig-dev libsqlite3-dev libxml2-dev libzip-dev unzip \
+    && docker-php-ext-configure gd --with-freetype \
+    && docker-php-ext-install gd mbstring pdo_sqlite xml zip \
     && a2enmod rewrite \
     && sed -i 's/Listen 80/Listen 8080/' /etc/apache2/ports.conf \
     && rm -rf /var/lib/apt/lists/*

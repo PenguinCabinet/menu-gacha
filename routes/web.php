@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\MenuGachaController;
 use App\Http\Controllers\MenuGachaFlagController;
+use App\Http\Controllers\OgImageController;
 use App\Http\Controllers\UserPageController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -11,6 +12,10 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 })->name('home');
+
+Route::get('/og/site.png', [OgImageController::class, 'site'])->name('og.site');
+Route::get('/og/menu/{id}.png', [OgImageController::class, 'menu'])->whereNumber('id')->name('og.menu');
+Route::get('/og/user/{name}.png', [OgImageController::class, 'user'])->name('og.user');
 
 Route::get('/menu/{id}', [MenuGachaController::class, 'show'])
     ->whereNumber('id')

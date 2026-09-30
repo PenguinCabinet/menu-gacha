@@ -4,6 +4,12 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>ユーザー登録</title>
+        @include('components.ogp', [
+            'title' => 'ユーザー登録 | メニューガチャ',
+            'description' => 'メニューガチャに登録して、オリジナルのメニューガチャを作成しましょう。',
+            'url' => route('register'),
+            'image' => route('og.site'),
+        ])
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     </head>
     <body class="bg-light">

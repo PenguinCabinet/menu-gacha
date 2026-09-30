@@ -4,6 +4,13 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>{{ $user->name }} | メニューガチャ</title>
+        @include('components.ogp', [
+            'title' => $user->name.' | メニューガチャ',
+            'description' => $user->name.'さんが公開しているメニューガチャをチェック。',
+            'url' => route('users.show', ['name' => $user->name]),
+            'image' => route('og.user', ['name' => $user->name]),
+            'type' => 'profile',
+        ])
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     </head>
     <body class="bg-light">

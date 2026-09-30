@@ -30,8 +30,8 @@
                                 @csrf
 
                                 <div class="mb-3">
-                                    <label for="email" class="form-label">メールアドレス</label>
-                                    <input type="email" id="email" name="email" class="form-control" placeholder="name@example.com" value="{{ old('email') }}">
+                                    <label for="name" class="form-label">ユーザー名</label>
+                                    <input type="text" id="name" name="name" class="form-control" value="{{ old('name') }}">
                                 </div>
 
                                 <div class="mb-3">

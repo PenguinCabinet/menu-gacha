@@ -18,14 +18,13 @@ class RegisterController extends Controller
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255', 'unique:users,name'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
 
         // User model has a hashed cast on password, so plain password will be hashed.
         $user = User::create([
             'name' => $data['name'],
-            'email' => $data['email'],
+            'email' => null,
             'password' => $data['password'],
         ]);
 

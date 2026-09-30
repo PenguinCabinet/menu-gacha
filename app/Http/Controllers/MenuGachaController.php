@@ -22,7 +22,7 @@ class MenuGachaController extends Controller
 
     public function show(Request $request, int $id): View
     {
-        $menuGacha = MenuGacha::with(['items.flags', 'flags'])->findOrFail($id);
+        $menuGacha = MenuGacha::with(['items.flags', 'flags', 'user'])->findOrFail($id);
         $isOwner = $request->user() !== null && $menuGacha->user_id === $request->user()->getKey();
 
         abort_unless($isOwner || $menuGacha->is_published, 404);

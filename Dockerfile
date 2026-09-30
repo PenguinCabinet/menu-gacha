@@ -31,7 +31,8 @@ COPY apache-vhost.conf /etc/apache2/sites-available/000-default.conf
 COPY litestream.yml /etc/litestream.yml
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint
 
-RUN chmod +x /usr/local/bin/docker-entrypoint \
+RUN rm -f bootstrap/cache/packages.php bootstrap/cache/services.php \
+    && chmod +x /usr/local/bin/docker-entrypoint \
     && php artisan package:discover --ansi \
     && mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views storage/logs bootstrap/cache \
     && chown -R www-data:www-data storage bootstrap/cache

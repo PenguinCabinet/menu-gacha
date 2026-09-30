@@ -4,8 +4,10 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\MenuGachaController;
 use App\Http\Controllers\MenuGachaFlagController;
+use App\Http\Controllers\MenuGachaSyncController;
 use App\Http\Controllers\OgImageController;
 use App\Http\Controllers\UserPageController;
+use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -31,6 +33,8 @@ Route::middleware('auth')->group(function () {
     })->name('dashboard');
 
     Route::post('/menu', [MenuGachaController::class, 'store'])->name('menu-gachas.store');
+    Route::get('/menu/{id}/sync/authorize', [MenuGachaSyncController::class, 'authorizeConnection'])
+        ->whereNumber('id')->name('menu-gachas.sync.authorize');
     Route::patch('/menu/{id}', [MenuGachaController::class, 'update'])
         ->whereNumber('id')
         ->name('menu-gachas.update');
@@ -53,6 +57,11 @@ Route::middleware('auth')->group(function () {
         ->whereNumber('flagId')
         ->name('menu-gachas.flags.destroy');
 });
+
+Route::get('/internal/menu/{id}/sync', [MenuGachaSyncController::class, 'load'])
+    ->whereNumber('id');
+Route::post('/internal/menu/{id}/sync', [MenuGachaSyncController::class, 'store'])
+    ->whereNumber('id')->withoutMiddleware(ValidateCsrfToken::class);
 
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login'])->name('login.submit');

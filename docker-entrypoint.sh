@@ -14,4 +14,6 @@ fi
 
 su -s /bin/sh www-data -c 'php artisan migrate --force'
 
+su -s /bin/sh www-data -c 'MENU_SYNC_LISTEN=true node server/menu-sync-server.js' &
+
 exec litestream replicate -config /etc/litestream.yml -exec "apache2-foreground"

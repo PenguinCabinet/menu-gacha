@@ -176,6 +176,7 @@
                             tabindex="0"
                         >
                             <h1 class="h4 fw-bold mb-4">メニューガチャを編集</h1>
+                            <p id="edit-sync-status" class="small text-secondary" role="status" aria-live="polite">同期に接続中…</p>
                             <div id="edit-save-status" class="position-fixed end-0 m-3 m-md-4 shadow-sm" style="bottom: 3rem; z-index: 1030;" role="status" aria-live="polite"></div>
 
                             <div class="mb-3">
@@ -394,5 +395,8 @@
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
         <script type="application/json" id="gacha-items">@json($menuGacha->items->map(fn ($item) => ['name' => $item->item_name, 'price' => $item->price, 'flagIds' => $item->flags->modelKeys()])->values(), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT)</script>
         <script type="module" src="{{ asset('js/menu-gacha.js') }}"></script>
+        @if ($isOwner)
+            @vite('resources/js/menu-gacha-sync.js')
+        @endif
     </body>
 </html>

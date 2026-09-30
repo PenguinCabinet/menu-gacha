@@ -1,8 +1,8 @@
 FROM node:22-bookworm-slim AS frontend
 
 WORKDIR /app
-COPY package.json ./
-RUN npm install
+COPY package.json package-lock.json ./
+RUN npm ci
 COPY . .
 RUN npm run build
 
@@ -14,7 +14,7 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends fonts-noto-cjk libfreetype6-dev libonig-dev libsqlite3-dev libxml2-dev libzip-dev unzip \
     && docker-php-ext-configure gd --with-freetype \
     && docker-php-ext-install gd mbstring pdo_sqlite xml zip \
-    && a2enmod rewrite \
+    && a2enmod rewrite proxy proxy_http proxy_wstunnel \
     && sed -i 's/Listen 80/Listen 8080/' /etc/apache2/ports.conf \
     && rm -rf /var/lib/apt/lists/*
 
@@ -28,6 +28,8 @@ RUN composer install --no-dev --no-interaction --prefer-dist --no-scripts --opti
 
 COPY . .
 COPY --from=frontend /app/public/build ./public/build
+COPY --from=frontend /app/node_modules ./node_modules
+COPY --from=frontend /usr/local/bin/node /usr/local/bin/node
 COPY apache-vhost.conf /etc/apache2/sites-available/000-default.conf
 COPY litestream.yml /etc/litestream.yml
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint

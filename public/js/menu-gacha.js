@@ -46,6 +46,27 @@ if (typeof document !== 'undefined') {
     if (editForm) {
         const status = document.getElementById('edit-save-status');
         const saveButton = document.querySelector('[form="menu-gacha-edit-form"][type="submit"]');
+        const itemList = document.getElementById('edit-items');
+        const flagList = document.getElementById('edit-flags');
+        const addItemForm = document.getElementById('add-item-form');
+        const addFlagForm = document.getElementById('add-flag-form');
+
+        function syncRows(currentList, updatedList) {
+            for (const row of currentList.querySelectorAll(':scope > [id]')) {
+                if (!updatedList.querySelector(`[id="${row.id}"]`)) {
+                    row.remove();
+                }
+            }
+            currentList.querySelector(':scope > p')?.remove();
+            for (const row of updatedList.children) {
+                if (row.id && !document.getElementById(row.id)) {
+                    currentList.append(row.cloneNode(true));
+                }
+            }
+            if (!currentList.children.length) {
+                currentList.append(updatedList.querySelector('p').cloneNode(true));
+            }
+        }
 
         function syncFlagFieldset(currentContainer, updatedContainer) {
             const currentFieldset = currentContainer.querySelector('fieldset');
@@ -68,7 +89,48 @@ if (typeof document !== 'undefined') {
             }
         }
 
-        async function submitMenuForm(form, button, onSuccess = () => {}) {
+        function applyUpdatedPage(updatedPage) {
+            syncRows(itemList, updatedPage.getElementById('edit-items'));
+            syncRows(flagList, updatedPage.getElementById('edit-flags'));
+            document.querySelector('.card-header h1').textContent = updatedPage.querySelector('.card-header h1').textContent;
+            document.title = updatedPage.title;
+            document.getElementById('preview-panel').innerHTML = updatedPage.getElementById('preview-panel').innerHTML;
+
+            const previousFlags = document.getElementById('gacha-flags');
+            const selectedFlags = new Set(Array.from(previousFlags?.querySelectorAll('input:checked') ?? [], (input) => input.value));
+            const previousFlagIds = new Set(Array.from(previousFlags?.querySelectorAll('input') ?? [], (input) => input.value));
+            const updatedFlags = updatedPage.getElementById('gacha-flags');
+            if (updatedFlags) {
+                for (const input of updatedFlags.querySelectorAll('input')) {
+                    input.checked = !previousFlagIds.has(input.value) || selectedFlags.has(input.value);
+                }
+                if (previousFlags) {
+                    previousFlags.replaceWith(updatedFlags);
+                } else {
+                    document.getElementById('gacha-result').before(updatedFlags);
+                }
+            } else {
+                previousFlags?.remove();
+            }
+
+            for (const row of itemList.querySelectorAll(':scope > [id^="edit-item-"]')) {
+                syncFlagFieldset(row, updatedPage.getElementById(row.id));
+            }
+            syncFlagFieldset(addItemForm.querySelector('.row'), updatedPage.querySelector('#add-item-form .row'));
+            gachaItems = JSON.parse(updatedPage.getElementById('gacha-items').textContent);
+        }
+
+        async function fetchUpdatedPage() {
+            const response = await fetch(window.location.pathname, { headers: { Accept: 'text/html' } });
+            if (!response.ok) {
+                throw new Error('Could not refresh menu data.');
+            }
+            applyUpdatedPage(new DOMParser().parseFromString(await response.text(), 'text/html'));
+        }
+
+        window.menuGachaRefresh = fetchUpdatedPage;
+
+        async function submitMenuForm(form, button) {
             button.disabled = true;
             status.className = 'position-fixed end-0 m-3 m-md-4 shadow-sm';
             status.replaceChildren();
@@ -88,40 +150,11 @@ if (typeof document !== 'undefined') {
                     return;
                 }
 
-                const pageResponse = await fetch(window.location.pathname, { headers: { Accept: 'text/html' } });
-                if (!pageResponse.ok) {
-                    throw new Error('Could not refresh menu data.');
+                await fetchUpdatedPage();
+                if (form === addItemForm || form === addFlagForm) {
+                    form.reset();
                 }
-
-                const updatedPage = new DOMParser().parseFromString(await pageResponse.text(), 'text/html');
-                onSuccess(result, updatedPage);
-                document.querySelector('.card-header h1').textContent = updatedPage.querySelector('.card-header h1').textContent;
-                document.title = updatedPage.title;
-                document.getElementById('preview-panel').innerHTML = updatedPage.getElementById('preview-panel').innerHTML;
-
-                const previousFlags = document.getElementById('gacha-flags');
-                const selectedFlags = new Set(Array.from(previousFlags?.querySelectorAll('input:checked') ?? [], (input) => input.value));
-                const previousFlagIds = new Set(Array.from(previousFlags?.querySelectorAll('input') ?? [], (input) => input.value));
-                const updatedFlags = updatedPage.getElementById('gacha-flags');
-                if (updatedFlags) {
-                    for (const input of updatedFlags.querySelectorAll('input')) {
-                        input.checked = !previousFlagIds.has(input.value) || selectedFlags.has(input.value);
-                    }
-                    if (previousFlags) {
-                        previousFlags.replaceWith(updatedFlags);
-                    } else {
-                        document.getElementById('gacha-result').before(updatedFlags);
-                    }
-                } else {
-                    previousFlags?.remove();
-                }
-
-                for (const row of document.querySelectorAll('#edit-items > [id^="edit-item-"]')) {
-                    syncFlagFieldset(row, updatedPage.getElementById(row.id));
-                }
-                syncFlagFieldset(document.querySelector('#add-item-form .row'), updatedPage.querySelector('#add-item-form .row'));
-
-                gachaItems = JSON.parse(updatedPage.getElementById('gacha-items').textContent);
+                window.menuGachaSync?.afterFormSuccess(form, result);
                 status.classList.add('alert', 'alert-success');
                 status.textContent = result.message;
             } catch (error) {
@@ -137,16 +170,9 @@ if (typeof document !== 'undefined') {
             submitMenuForm(editForm, saveButton);
         });
 
-        const itemList = document.getElementById('edit-items');
-        const addItemForm = document.getElementById('add-item-form');
-
         addItemForm.addEventListener('submit', (event) => {
             event.preventDefault();
-            submitMenuForm(addItemForm, addItemForm.querySelector('[type="submit"]'), (result, updatedPage) => {
-                itemList.querySelector('p')?.remove();
-                itemList.append(updatedPage.getElementById(`edit-item-${result.itemId}`));
-                addItemForm.reset();
-            });
+            submitMenuForm(addItemForm, addItemForm.querySelector('[type="submit"]'));
         });
 
         itemList.addEventListener('submit', (event) => {
@@ -156,25 +182,12 @@ if (typeof document !== 'undefined') {
             }
 
             event.preventDefault();
-            const itemRow = form.closest('[id^="edit-item-"]');
-            submitMenuForm(form, form.querySelector('[type="submit"]'), (_result, updatedPage) => {
-                itemRow.remove();
-                if (!itemList.children.length) {
-                    itemList.append(updatedPage.querySelector('#edit-items p'));
-                }
-            });
+            submitMenuForm(form, form.querySelector('[type="submit"]'));
         });
-
-        const flagList = document.getElementById('edit-flags');
-        const addFlagForm = document.getElementById('add-flag-form');
 
         addFlagForm.addEventListener('submit', (event) => {
             event.preventDefault();
-            submitMenuForm(addFlagForm, addFlagForm.querySelector('[type="submit"]'), (result, updatedPage) => {
-                flagList.querySelector('p')?.remove();
-                flagList.append(updatedPage.getElementById(`edit-flag-${result.flagId}`));
-                addFlagForm.reset();
-            });
+            submitMenuForm(addFlagForm, addFlagForm.querySelector('[type="submit"]'));
         });
 
         flagList.addEventListener('submit', (event) => {
@@ -184,13 +197,7 @@ if (typeof document !== 'undefined') {
             }
 
             event.preventDefault();
-            const flagRow = form.closest('[id^="edit-flag-"]');
-            submitMenuForm(form, form.querySelector('[type="submit"]'), (_result, updatedPage) => {
-                flagRow.remove();
-                if (!flagList.children.length) {
-                    flagList.append(updatedPage.querySelector('#edit-flags p'));
-                }
-            });
+            submitMenuForm(form, form.querySelector('[type="submit"]'));
         });
     }
 

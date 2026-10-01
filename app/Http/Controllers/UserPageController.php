@@ -11,8 +11,7 @@ class UserPageController extends Controller
     {
         $user = User::where('name', $name)->firstOrFail();
         $menuGachas = $user->menuGachas()
-            ->where('is_published', true)
-            ->latest('created_at')
+            ->forTimeline()
             ->get();
 
         return view('users.show', ['user' => $user, 'menuGachas' => $menuGachas]);

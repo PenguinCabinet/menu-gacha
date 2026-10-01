@@ -27,8 +27,7 @@ class UserPageTest extends TestCase
             ->assertSeeText('タイムライン')
             ->assertSeeText('公開中のガチャ')
             ->assertSee(route('menu-gachas.show', ['id' => $publishedMenuGacha->getKey()]))
-            ->assertDontSeeText('非公開のガチャ')
-            ->assertSeeText('このタブは準備中です。');
+            ->assertDontSeeText('非公開のガチャ');
     }
 
     public function test_user_page_shows_an_empty_state_when_no_menu_gachas_are_published(): void

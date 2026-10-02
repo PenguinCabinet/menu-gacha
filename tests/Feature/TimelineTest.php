@@ -106,6 +106,86 @@ class TimelineTest extends TestCase
             ->assertDontSeeText('published-menu-21');
     }
 
+    public function test_home_timeline_shows_pagination_buttons_and_navigates_across_pages(): void
+    {
+        $user = User::factory()->create();
+        for ($i = 1; $i <= 45; $i++) {
+            $user->menuGachas()->create([
+                'name' => sprintf('paged-menu-%02d', $i),
+                'is_published' => true,
+            ]);
+        }
+
+        $firstPage = $this->get(route('home'));
+        $firstPage->assertOk()
+            ->assertSeeText('paged-menu-45')
+            ->assertSeeText('paged-menu-26')
+            ->assertDontSeeText('paged-menu-25')
+            ->assertDontSeeText('paged-menu-01')
+            ->assertSee('timeline_page=2', false)
+            ->assertSee('timeline_page=3', false)
+            ->assertDontSee('?page=2', false);
+
+        $secondPage = $this->get(route('home', ['timeline_page' => 2]));
+        $secondPage->assertOk()
+            ->assertSeeText('paged-menu-25')
+            ->assertSeeText('paged-menu-06')
+            ->assertDontSeeText('paged-menu-26')
+            ->assertDontSeeText('paged-menu-05')
+            ->assertSee('timeline_page=1', false)
+            ->assertSee('timeline_page=3', false);
+
+        $thirdPage = $this->get(route('home', ['timeline_page' => 3]));
+        $thirdPage->assertOk()
+            ->assertSeeText('paged-menu-05')
+            ->assertSeeText('paged-menu-01')
+            ->assertDontSeeText('paged-menu-06')
+            ->assertDontSeeText('paged-menu-45')
+            ->assertSee('timeline_page=1', false)
+            ->assertSee('timeline_page=2', false);
+    }
+
+    public function test_home_timeline_hides_pagination_buttons_at_or_below_twenty_items(): void
+    {
+        $user = User::factory()->create();
+        for ($i = 1; $i <= 20; $i++) {
+            $user->menuGachas()->create([
+                'name' => sprintf('exact-menu-%02d', $i),
+                'is_published' => true,
+            ]);
+        }
+
+        $this->get(route('home'))
+            ->assertOk()
+            ->assertSeeText('exact-menu-20')
+            ->assertSeeText('exact-menu-01')
+            ->assertDontSee('timeline_page=', false);
+    }
+
+    public function test_dashboard_timeline_shows_pagination_buttons_and_navigates(): void
+    {
+        $user = User::factory()->create();
+        $otherUser = User::factory()->create();
+        for ($i = 1; $i <= 21; $i++) {
+            $otherUser->menuGachas()->create([
+                'name' => sprintf('dashboard-menu-%02d', $i),
+                'is_published' => true,
+            ]);
+        }
+
+        $this->actingAs($user)->get(route('dashboard'))
+            ->assertOk()
+            ->assertSeeText('dashboard-menu-21')
+            ->assertDontSeeText('dashboard-menu-01')
+            ->assertSee('timeline_page=2', false);
+
+        $this->actingAs($user)->get(route('dashboard', ['timeline_page' => 2]))
+            ->assertOk()
+            ->assertSeeText('dashboard-menu-01')
+            ->assertDontSeeText('dashboard-menu-21')
+            ->assertSee('timeline_page=1', false);
+    }
+
     public function test_home_timeline_eager_loads_users_to_avoid_n_plus_one(): void
     {
         $user = User::factory()->create(['name' => 'timeline-user']);

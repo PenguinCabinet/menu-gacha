@@ -121,11 +121,10 @@
                             aria-labelledby="timeline-tab"
                             tabindex="0"
                         >
-                            <div class="text-center py-5">
-                                <div class="display-4 mb-3" aria-hidden="true">🕒</div>
-                                <h2 class="h4 fw-bold mb-2">タイムライン</h2>
-                                <p class="text-secondary mb-0">他ユーザーが作成したメニューガチャを一覧表にできます</p>
-                            </div>
+                            <x-timeline
+                                :menuGachas="$timelineMenuGachas"
+                                emptyMessage="まだ公開されたメニューガチャがありません。"
+                            />
                         </section>
                     </div>
                 </div>

@@ -6,11 +6,14 @@ use App\Http\Controllers\MenuGachaController;
 use App\Http\Controllers\MenuGachaFlagController;
 use App\Http\Controllers\OgImageController;
 use App\Http\Controllers\UserPageController;
+use App\Models\MenuGacha;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
+    $timelineMenuGachas = MenuGacha::forTimeline()->limit(20)->get();
+
+    return view('welcome', ['timelineMenuGachas' => $timelineMenuGachas]);
 })->name('home');
 
 Route::get('/og/site.png', [OgImageController::class, 'site'])->name('og.site');
@@ -26,8 +29,9 @@ Route::get('/u/{name}', [UserPageController::class, 'show'])->name('users.show')
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', function (Request $request) {
         $menuGachas = $request->user()->menuGachas()->latest('created_at')->get();
+        $timelineMenuGachas = MenuGacha::forTimeline()->limit(20)->get();
 
-        return view('dashboard', ['menuGachas' => $menuGachas]);
+        return view('dashboard', ['menuGachas' => $menuGachas, 'timelineMenuGachas' => $timelineMenuGachas]);
     })->name('dashboard');
 
     Route::post('/menu', [MenuGachaController::class, 'store'])->name('menu-gachas.store');

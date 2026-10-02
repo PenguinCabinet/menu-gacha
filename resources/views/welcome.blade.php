@@ -101,6 +101,17 @@
                 </div>
                 <p class="text-center text-secondary mt-4 mb-0">ユーザーが作ったメニューも、一覧で見ることができます。</p>
             </section>
+
+            <section class="container py-5" aria-labelledby="timeline-title">
+                <div class="text-center mb-4">
+                    <p class="eyebrow small fw-bold mb-2">TIMELINE</p>
+                    <h2 id="timeline-title" class="fw-bold">新着のメニューガチャ</h2>
+                </div>
+                <x-timeline
+                    :menuGachas="$timelineMenuGachas"
+                    emptyMessage="まだ公開されたメニューガチャがありません。"
+                />
+            </section>
         </main>
     </body>
 </html>

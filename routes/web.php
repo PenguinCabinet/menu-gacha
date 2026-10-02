@@ -11,7 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    $timelineMenuGachas = MenuGacha::forTimeline()->limit(20)->get();
+    $timelineMenuGachas = MenuGacha::forTimeline()->with('user')->paginate(20, ['*'], 'timeline_page');
 
     return view('welcome', ['timelineMenuGachas' => $timelineMenuGachas]);
 })->name('home');
@@ -29,7 +29,7 @@ Route::get('/u/{name}', [UserPageController::class, 'show'])->name('users.show')
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', function (Request $request) {
         $menuGachas = $request->user()->menuGachas()->latest('created_at')->get();
-        $timelineMenuGachas = MenuGacha::forTimeline()->limit(20)->get();
+        $timelineMenuGachas = MenuGacha::forTimeline()->with('user')->paginate(20, ['*'], 'timeline_page');
 
         return view('dashboard', ['menuGachas' => $menuGachas, 'timelineMenuGachas' => $timelineMenuGachas]);
     })->name('dashboard');

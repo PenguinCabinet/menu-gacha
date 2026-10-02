@@ -35,4 +35,10 @@
             <p class="text-secondary mb-0">{{ $emptyMessage }}</p>
         </div>
     @endforelse
+
+    @if ($menuGachas instanceof \Illuminate\Contracts\Pagination\Paginator && $menuGachas->hasPages())
+        <div class="mt-4 d-flex justify-content-center">
+            {{ $menuGachas->links('pagination::bootstrap-5') }}
+        </div>
+    @endif
 </div>

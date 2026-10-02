@@ -29,7 +29,7 @@ class MenuGacha extends Model
     #[Scope]
     protected function forTimeline(Builder $query): void
     {
-        $query->published()->with('user')->latest('created_at')->latest('id');
+        $query->published()->latest('created_at')->latest('id');
     }
 
     protected function casts(): array

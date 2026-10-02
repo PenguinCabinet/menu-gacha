@@ -10,7 +10,7 @@ class TimelineTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_home_timeline_shows_all_published_menu_gachas_in_latest_order(): void
+    public function test_home_timeline_shows_published_menu_gachas_in_latest_order(): void
     {
         $oldUser = User::factory()->create(['name' => 'old-user']);
         $newUser = User::factory()->create(['name' => 'new-user']);
@@ -48,7 +48,7 @@ class TimelineTest extends TestCase
             ->assertSeeText('まだ公開されたメニューガチャがありません。');
     }
 
-    public function test_dashboard_timeline_shows_all_users_published_menu_gachas(): void
+    public function test_dashboard_timeline_shows_other_users_published_menu_gachas(): void
     {
         $user = User::factory()->create();
         $otherUser = User::factory()->create(['name' => 'other-user']);
@@ -82,5 +82,47 @@ class TimelineTest extends TestCase
             ->assertDontSeeText('本人の非公開ガチャ')
             ->assertDontSeeText('他人の公開ガチャ')
             ->assertDontSee(route('menu-gachas.show', ['id' => $otherMenu->getKey()]));
+    }
+
+    public function test_home_timeline_paginates_beyond_twenty_items(): void
+    {
+        $user = User::factory()->create();
+        for ($i = 1; $i <= 21; $i++) {
+            $user->menuGachas()->create([
+                'name' => sprintf('published-menu-%02d', $i),
+                'is_published' => true,
+            ]);
+        }
+
+        $this->get(route('home'))
+            ->assertOk()
+            ->assertSeeText('published-menu-21')
+            ->assertSeeText('published-menu-02')
+            ->assertDontSeeText('published-menu-01');
+
+        $this->get(route('home', ['timeline_page' => 2]))
+            ->assertOk()
+            ->assertSeeText('published-menu-01')
+            ->assertDontSeeText('published-menu-21');
+    }
+
+    public function test_home_timeline_eager_loads_users_to_avoid_n_plus_one(): void
+    {
+        $user = User::factory()->create(['name' => 'timeline-user']);
+        $user->menuGachas()->create(['name' => '公開ガチャ', 'is_published' => true]);
+
+        $menuGachas = $this->get(route('home'))->viewData('timelineMenuGachas');
+
+        $this->assertTrue($menuGachas->getCollection()->first()->relationLoaded('user'));
+    }
+
+    public function test_profile_timeline_does_not_eager_load_unneeded_users(): void
+    {
+        $user = User::factory()->create(['name' => 'profile-user']);
+        $user->menuGachas()->create(['name' => '本人の公開ガチャ', 'is_published' => true]);
+
+        $menuGachas = $this->get(route('users.show', ['name' => $user->name]))->viewData('menuGachas');
+
+        $this->assertFalse($menuGachas->first()->relationLoaded('user'));
     }
 }
